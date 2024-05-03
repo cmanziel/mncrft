@@ -74,6 +74,19 @@ float to_radians(float angle)
     return angle_rad;
 }
 
+float point_plane_distance(vec3 plane_origin, vec3 plane_normal, vec3 point)
+{
+    float a = plane_normal.x;
+    float b = plane_normal.y;
+    float c = plane_normal.z;
+
+    float d = -(a * plane_origin.x + b * plane_origin.y + c * plane_origin.z);
+
+    float dist = abs((long)(a * point.x + b * point.y + c * point.z + d)) / sqrt(a * a + b * b + c * c);
+
+    return dist;
+}
+
 //void substitute_VertexBuffer(std::vector<uint8_t> source, std::vector<VertexBuffer*> dest)
 //{
 //    unsigned int dest_index = 0;
