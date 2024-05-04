@@ -261,47 +261,49 @@ vec3 Camera::GetPosition()
 
 bool Camera::IsInsideFrustum(vec3 position)
 {
-    // calcualate the argument coordinates relative to the camera (kind of eye space transformation)
-
+    // position coordinates relative to camera position
     vec3 pos_from_camera = position - m_CameraPos;
-
     vec3 camera_left = glm::normalize(glm::cross(m_CameraUp, m_CameraDir));
 
-    // from the point camera front, go left by -m_NearPlaneLeft
-    vec3 near_left = m_CameraFront + camera_left * (-m_NearPlaneLeft);
-    vec3 near_top = m_CameraFront * tan(m_fovy / 2);
+    // check if point is behind camera
+    vec3 pos_from_camera_cross = glm::normalize(glm::cross(camera_left, pos_from_camera));
 
-    // simmetrical frustum
-    vec3 near_right = -near_left;
-    vec3 near_bottom = -near_top;
+    // TODO: check if point is behid near plane, use glm::cross(camera_left, pos_from_front) with pos_from_front = position - (m_CameraPos + m_CameraFront);
 
-    // calculate left, right, top and bottom coordinates on the plane parallel to the near plane whose origin is pos_from_camera
-    // pos_from_camera distance from camera position plane, with m_CameraDir as normal
-    float distance_from_camera = point_plane_distance(m_CameraPos, m_CameraDir, pos_from_camera);
-    float distance_from_near = distance_from_camera - m_FocalLength;
-
-    // problem, this evaluates to true for points before and some points behind the camera 
-    if (!(distance_from_camera > m_FocalLength && distance_from_camera < m_FocalLength + m_NearToFarDistance))
+    if (pos_from_camera_cross + m_CameraUp == vec3(0.0, 0.0, 0.0))
         return false;
 
-    // boundaries of the frustum for the current point, see agenda 03/05/24
+    // check if position's distance from near plane is inside m_NearToFaeDistance
+    float distance_from_near = point_plane_distance(m_CameraFront, m_CameraDir, pos_from_camera);
+
+    if (distance_from_near > m_NearToFarDistance)
+        return false;
+
+    // from the point camera front, go left by -m_NearPlaneLeft
+    vec3 near_left = m_CameraFront + camera_left * (m_NearPlaneLeft);
+    vec3 near_top = m_CameraFront + m_CameraUp * m_FocalLength * tan(m_fovy / 2);
+
+    // simmetrical frustum, flip near_left and near top onto the near plane
+    vec3 near_right = m_CameraFront + camera_left * (-m_NearPlaneLeft);
+    vec3 near_bottom = m_CameraFront - m_CameraUp * m_FocalLength * tan(m_fovy / 2);
+
+    // left, right, bottom and top for the plane whose origin is position and intersects the frustum
     vec3 plane_left = distance_from_near / m_FocalLength * near_left;
     vec3 plane_right = distance_from_near / m_FocalLength * near_right;
     vec3 plane_top = distance_from_near / m_FocalLength * near_top;
     vec3 plane_bottom = distance_from_near / m_FocalLength * near_bottom;
 
-    float pos_length = glm::length(pos_from_camera);
+    // distances from camera's axis' planes, in fact the coordinates relative to the positive semiaxis of the camera's coordinate systems
+    // if distance of position (function argument) from camera's plane whose normal is camera_left is greater than the distance of plane_left from the same plane, then position is outside frustum
 
-    // check for pos_from_camera distnaces from camera planes
-    // these are the x and y coordinates in a space where the camera is the origin
+    // frustum is simmetrical so right and bottom have the same values
+    float horizontal_boundary = point_plane_distance(m_CameraFront, camera_left, plane_left);
+    float vertical_boundary = point_plane_distance(m_CameraFront, camera_left, plane_left);
 
-    float pos_camera_x = point_plane_distance(m_CameraFront, camera_left, pos_from_camera);
-    float pos_camera_y = point_plane_distance(m_CameraFront, m_CameraUp, pos_from_camera);
-
-    if (!(pos_camera_x > plane_left && pos_camera_x < plane_right))
+    if (point_plane_distance(m_CameraFront, camera_left, position) > horizontal_boundary)
         return false;
 
-    if (!(pos_camera_y > plane_bottom && pos_camera_y < plane_top))
+    if (point_plane_distance(m_CameraFront, m_CameraUp, position) > horizontal_boundary)
         return false;
 
     return true;

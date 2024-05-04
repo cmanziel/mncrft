@@ -87,6 +87,11 @@ float point_plane_distance(vec3 plane_origin, vec3 plane_normal, vec3 point)
     return dist;
 }
 
+float dot_product(const vec3 u, const vec3 v)
+{
+    return u.x * v.x + u.y * v.y + u.z * v.z;
+}
+
 //void substitute_VertexBuffer(std::vector<uint8_t> source, std::vector<VertexBuffer*> dest)
 //{
 //    unsigned int dest_index = 0;

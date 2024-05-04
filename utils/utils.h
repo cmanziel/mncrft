@@ -15,6 +15,8 @@ void mat4_to_float(mat4 mat, float* arr);
 float to_radians(float angle);
 
 float point_plane_distance(vec3 plane_origin, vec3 plane_normal, vec3 point);
+float dot_product(const vec3 u, const vec3 v);
+
 
 //void substitute_VertexBuffer(std::vector<uint8_t> source, std::vector<VertexBuffer*> dest)
 //{
