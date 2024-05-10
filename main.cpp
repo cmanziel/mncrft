@@ -75,6 +75,7 @@ int main()
 
     float start = glfwGetTime(); // time in milliseconds
     float timeFor60fps = 1.0  / 60.0;
+    int chunkNum = -1;
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(GLFWwin))
@@ -92,7 +93,12 @@ int main()
         if (deltaTime < timeFor60fps)
             continue;
         else
+        {
             start = currentFrame;
+            chunkNum++;
+            if (chunkNum == terrain->m_Chunks.size())
+                chunkNum = 0;   
+        }
 
         player->GetCam()->UpdateTime(deltaTime);
 
@@ -100,9 +106,9 @@ int main()
         //but only render every 1 / 60 seconds, 60 fps
         window->CheckKeyInput();
 
-        terrain->GenerateWorld(player);
+        terrain->GenerateWorld(player, chunkNum);
 
-        renderer->Draw(terrain, player);
+        renderer->Draw(terrain, player, chunkNum);
 
         //sets the player's last chunk grid position to its current position
         player->SetLastChunkGridPosition();

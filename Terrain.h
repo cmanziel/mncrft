@@ -13,7 +13,9 @@ public:
 	Terrain(Player* player);
 	~Terrain();
 
-	void GenerateWorld(Player* player);
+	void GenerateWorld(Player* player, int chunkNum);
+
+	void GenerateMeshes(Chunk* chunk, int chunkNum);
 
 	//void SetChunkSurroundings(Chunk* chunk, vec3 chunkLocalPos);
 	//void SetChunkSurroundings(Chunk* chunk, size_t indexInTerrain);

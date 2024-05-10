@@ -113,7 +113,7 @@ void Terrain::GenerateWorld(Player* player)
 */
 
 
- void Terrain::GenerateWorld(Player* player)
+ void Terrain::GenerateWorld(Player* player, int chunkNum)
  {
 	 int chunkX = player->GetChunkGridPosition().x;
 	 int chunkZ = player->GetChunkGridPosition().z;
@@ -181,16 +181,17 @@ void Terrain::GenerateWorld(Player* player)
 		 insertion_sort_chunks(m_Chunks, start, end, X_COORD);
 	 }
 
-	 // create the meshes, if camera moved or rotated they will be different
-	 for (int i = 0; i < m_Chunks.size(); i++)
-	 {
-		 Chunk* c = m_Chunks[i];
-		 Mesh* mesh = c->GetMesh();
+	 // pass to this function the frame number which determines which chunk's mesh will be generated
+	 // by now, only this function could be locked to the fps rate because to generate the mesh is necessary to know which are the surrounding chunks
+	 GenerateMeshes(m_Chunks[chunkNum], chunkNum);
+ }
 
-		 SetChunkSurroundings(c, player->GetChunkGridPosition(), i);
+ void Terrain::GenerateMeshes(Chunk* chunk, int chunkNum)
+ {
+	 Mesh* mesh = chunk->GetMesh();
+	 Player* player = chunk->GetPlayer();
 
-		 mesh->Build(m_Buffers);
-	 }
+	 SetChunkSurroundings(chunk, player->GetChunkGridPosition(), chunkNum);
  }
 
  void Terrain::SetChunkSurroundings(Chunk* chunk, vec3 chunkPlayerIsIn, int indexInTerrain)

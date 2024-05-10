@@ -11,7 +11,7 @@ class Renderer
 {
 public:
 	Renderer();
-	void Draw(Terrain* terrain, Player* player);
+	void Draw(Terrain* terrain, Player* player, int chunkNum);
 	~Renderer();
 private:
 	Shader* m_Shader;

@@ -8,7 +8,6 @@
 
 void insertFaceTexCoords(float* coords, unsigned int blockID, int side);
 //mat4 transform_face(Camera* camera, float* face, int side, vec3 blockWorldPos);
-float to_radians(float angle);
 
 //enum sides {
 //	front, back, left, right, top, bottom

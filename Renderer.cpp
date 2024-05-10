@@ -139,16 +139,18 @@ Renderer::Renderer()
 }
 
 
-void Renderer::Draw(Terrain* terrain, Player* player)
+void Renderer::Draw(Terrain* terrain, Player* player, int chunkNum)
 {
-	// for every chunk send to the shader the relative texture coordinates and mvps (colum by column)
-	for (Chunk* chunk : terrain->m_Chunks)
+	// draw all the meshes generated to this point otherwise one mesh a frame will be drawn and the previous one not anymore
+	for (int i = 0; i < chunkNum; i++)
 	{
+		Chunk* chunk = terrain->m_Chunks[i];
 		Mesh* mesh = chunk->GetMesh();
+
 		terrain_buffers* terrain_bufs = mesh->GetTerrainBufs();
 		//offsets* buffers_offsets = mesh->GetTerrainOffsets();
 		offsets buffer_offsets = mesh->GetTerrainOffsets();
-		
+
 		terrain_bufs->face_index->Bind();
 
 		glEnableVertexAttribArray(16);
@@ -170,7 +172,7 @@ void Renderer::Draw(Terrain* terrain, Player* player)
 		int model_attrib_index = 11;
 
 		terrain_bufs->model->Bind();
-		
+
 		glEnableVertexAttribArray(++model_attrib_index);
 		//glVertexAttribPointer(model_attrib_index, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(float), (void*)buffers_offsets->model);
 		glVertexAttribPointer(model_attrib_index, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(float), (void*)buffer_offsets.model);
