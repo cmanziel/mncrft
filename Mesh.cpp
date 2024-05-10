@@ -138,7 +138,11 @@ void Mesh::Build(terrain_buffers* terrainBufs)
 	{
 		Block* block = m_Chunk->GetBlocksVector()[i];
 
-		if (block->GetID() != air)
+		Camera* cam = m_Chunk->GetPlayer()->GetCam();
+		bool isBlockInsideFrustum = cam->IsInsideFrustum(block->GetWorldPosition());
+		//bool isBlockInsideFrustum = true;
+
+		if (block->GetID() != air && isBlockInsideFrustum)
 			AddBlockToMesh(block);
 	}
 

@@ -49,6 +49,7 @@
 float currentFrame = 0.0f;
 float lastFrame = 0.0f;
 float deltaTime = 0.0f;
+int frames = 0;
 
 int main()
 {
@@ -72,35 +73,32 @@ int main()
     TextureAtlas* atlas = new TextureAtlas();
     Terrain* terrain = new Terrain(player);
 
+    float start = glfwGetTime(); // time in milliseconds
+    float timeFor60fps = 1.0  / 60.0;
+
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(GLFWwin))
     {
-        glEnable(GL_DEPTH_TEST);
-
-        glEnable(GL_CULL_FACE);
-
-        if (window->GetInputHandler()->togglePolygonMode)
-            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-        else
-            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
         /* Render here */
 
         glClearColor((float)135 / 255, (float)206 / 255, (float)250 / 255, 1.0);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // calculate deltaTime
         currentFrame = glfwGetTime();
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
+        deltaTime = currentFrame - start;
+
+        printf("delta time: %f\n", deltaTime);
+
+        if (deltaTime < timeFor60fps)
+            continue;
+        else
+            start = currentFrame;
 
         player->GetCam()->UpdateTime(deltaTime);
 
+        // process input and genrate meshes accordingly every frame
+        //but only render every 1 / 60 seconds, 60 fps
         window->CheckKeyInput();
-
-        vec3 gridPos = player->GetChunkGridPosition();
-
-        printf("x: %d\t, z: %d\n", (int)gridPos.x, (int)gridPos.z);
 
         terrain->GenerateWorld(player);
 

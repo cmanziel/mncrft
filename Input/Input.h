@@ -9,13 +9,15 @@ class Input {
 public:
     Input(Player* player);
     void KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
-    bool togglePolygonMode;
 
     Player* GetPlayer();
     //void CheckKeyInput();
 
+    void TogglePolygonMode();
+
 private:
     Player* m_Player;
+    bool m_TogglePolygonMode;
 };
 
 //void Input::CheckKeyInput() {

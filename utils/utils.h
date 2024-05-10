@@ -1,8 +1,11 @@
 #pragma once
 
+#define _USE_MATH_DEFINES
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <math.h>
 #include "glm_types.h"
 
 // substitute data from one source array to multiple destination arrays
@@ -17,6 +20,8 @@ float to_radians(float angle);
 float point_plane_distance(vec3 plane_origin, vec3 plane_normal, vec3 point);
 float dot_product(const vec3 u, const vec3 v);
 
+// gen1 e gen2 sono i vettori della base del piano su cui proiettare v
+vec3 project_on_plane(vec3 v, vec3 gen1, vec3 gen2);
 
 //void substitute_VertexBuffer(std::vector<uint8_t> source, std::vector<VertexBuffer*> dest)
 //{

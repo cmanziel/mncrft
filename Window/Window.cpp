@@ -11,6 +11,10 @@ Window::Window(Input* inputHandler)
 	//glfwSetKeyCallback(m_Window, key_callback);
 
 	glfwSetInputMode(m_Window, GLFW_STICKY_KEYS, GLFW_FALSE);
+
+	glEnable(GL_DEPTH_TEST);
+
+	glEnable(GL_CULL_FACE);
 }
 
 GLFWwindow* Window::GetGLFWWindow()
@@ -46,7 +50,7 @@ void Window::CheckKeyInput()
 		cam->Rotate(GLFW_KEY_RIGHT);
 
 	if (glfwGetKey(m_Window, GLFW_KEY_P) == GLFW_PRESS)
-		m_InputHandler->togglePolygonMode = !m_InputHandler->togglePolygonMode;
+		m_InputHandler->TogglePolygonMode();
 
 	m_InputHandler->GetPlayer()->UpdateChunkGridPosition();
 }

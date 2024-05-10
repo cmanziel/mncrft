@@ -92,6 +92,19 @@ float dot_product(const vec3 u, const vec3 v)
     return u.x * v.x + u.y * v.y + u.z * v.z;
 }
 
+vec3 project_on_plane(vec3 v, vec3 gen1, vec3 gen2)
+{
+    vec3 proj;
+
+    float dot_gen1 = dot_product(gen1, v);
+    float dot_gen2 = dot_product(gen2, v);
+
+    proj = dot_gen1 * gen1 + dot_gen2 * gen2;
+
+    return proj;
+}
+
+
 //void substitute_VertexBuffer(std::vector<uint8_t> source, std::vector<VertexBuffer*> dest)
 //{
 //    unsigned int dest_index = 0;

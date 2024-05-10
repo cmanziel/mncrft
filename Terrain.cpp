@@ -123,7 +123,20 @@ void Terrain::GenerateWorld(Player* player)
 	 // if the player hasn't moved between chunks then no need to check the world boundaries
 	 // unless the world has not been created yet (when m_Chunks.size())
 	 if (chunkX == lastChunkGridPosition.x && chunkZ == lastChunkGridPosition.z && m_Chunks.size() > 0)
+	 {
+		 //// create the meshes, if camera moved or rotated they will be different, very slow
+		 //for (int i = 0; i < m_Chunks.size(); i++)
+		 //{
+			// Chunk* c = m_Chunks[i];
+			// Mesh* mesh = c->GetMesh();
+
+			// SetChunkSurroundings(c, player->GetChunkGridPosition(), i);
+
+			// mesh->Build(m_Buffers);
+		 //}
+
 		 return;
+	 }
 
 	 // CHUNK_RADIUS * deltaPos: if deltaPos.coordinate > 0 i chunk vengono creati nella direzione positiva della coordinata
 	 // if deltaPos.coordinate < 0 i chunk vengono creati nella direzione negativa della coordinata
@@ -168,7 +181,7 @@ void Terrain::GenerateWorld(Player* player)
 		 insertion_sort_chunks(m_Chunks, start, end, X_COORD);
 	 }
 
-	 // create the meshes
+	 // create the meshes, if camera moved or rotated they will be different
 	 for (int i = 0; i < m_Chunks.size(); i++)
 	 {
 		 Chunk* c = m_Chunks[i];

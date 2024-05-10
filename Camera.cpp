@@ -16,7 +16,7 @@ enum sides {
 };
 
 Camera::Camera()
-    : m_fovy(45.0f), m_FocalLength(1.0f), m_NearToFarDistance(99.0f), m_NearPlaneLeft(20.0);
+    : m_fovy(M_PI / 4), m_FocalLength(0.1f), m_NearToFarDistance(99.9f)
 {
     // place the camera at the centre of the chunk and at CHUNK_HEIGHT
     m_CameraPos = vec3(8.0, 20.0, 8.0);
@@ -27,6 +27,10 @@ Camera::Camera()
 
     vec3 camera_left = glm::cross(worldUp, m_CameraDir);
     m_CameraUp = glm::normalize(glm::cross(m_CameraDir, camera_left));
+
+    float near_plane_top = m_FocalLength * tan(m_fovy / 2);
+    float aspect_ratio = 16.0 / 9; // get the actual aspect ratio from the window dimension
+    m_NearPlaneLeft = near_plane_top * aspect_ratio;
 
     //m_yaw = glm::degrees(glm::angle(vec3(1.0, 0.0, 0.0), m_CameraDir));
     m_yaw = -90.0; // correct for camera dir = vec3(0.0, 0.0, -1.0)
@@ -180,7 +184,15 @@ mat4 Camera::GetModelMat4(vec3 blockTrans, int side)
 
 mat4 Camera::GetProjectionMat4()
 {
-    mat4 projection = glm::perspective(glm::radians(45.0f), 1280.0f / 960.0f, 0.1f, 100.0f);
+    // see https://glm.g-truc.net/0.9.7/api/a00174.html
+
+    //mat4 projection = glm::perspective(m_fovy, (m_FocalLength + m_NearToFarDistance) / m_FocalLength, m_FocalLength, m_FocalLength + m_NearToFarDistance);
+    float near_plane_width = 2 * m_NearPlaneLeft;
+    float near_plane_height = 2 * m_FocalLength * tan(m_fovy / 2);
+
+    float aspect = near_plane_width / near_plane_height;
+
+    mat4 projection = glm::perspective(m_fovy, aspect, m_FocalLength, m_FocalLength + m_NearToFarDistance);
 
     return projection;
 }
@@ -265,45 +277,38 @@ bool Camera::IsInsideFrustum(vec3 position)
     vec3 pos_from_camera = position - m_CameraPos;
     vec3 camera_left = glm::normalize(glm::cross(m_CameraUp, m_CameraDir));
 
-    // check if point is behind camera
-    vec3 pos_from_camera_cross = glm::normalize(glm::cross(camera_left, pos_from_camera));
+    // check if position is behind camera:
+    // project pos_from_camera onto the plane whose normal is m_CameraUp
+    // do cross product between projection and camera_left
+    // check against m_CmaeraUp
 
-    // TODO: check if point is behid near plane, use glm::cross(camera_left, pos_from_front) with pos_from_front = position - (m_CameraPos + m_CameraFront);
+    // projection
+    vec3 projection = project_on_plane(pos_from_camera, m_CameraDir, camera_left);
+    vec3 projection_cross = glm::normalize(glm::cross(projection, camera_left));
 
-    if (pos_from_camera_cross + m_CameraUp == vec3(0.0, 0.0, 0.0))
+    // if the cross product of projection and camera_left and m_CameraUp have opposite orientations then position is behind the camera
+    if (projection_cross + m_CameraUp == vec3(0.0, 0.0, 0.0))
         return false;
 
     // check if position's distance from near plane is inside m_NearToFaeDistance
-    float distance_from_near = point_plane_distance(m_CameraFront, m_CameraDir, pos_from_camera);
+    float distance_from_near = point_plane_distance(m_CameraFront, m_CameraDir, position);
 
     if (distance_from_near > m_NearToFarDistance)
         return false;
 
-    // from the point camera front, go left by -m_NearPlaneLeft
-    vec3 near_left = m_CameraFront + camera_left * (m_NearPlaneLeft);
-    vec3 near_top = m_CameraFront + m_CameraUp * m_FocalLength * tan(m_fovy / 2);
+    float near_top = m_FocalLength * tan(m_fovy / 2);
 
-    // simmetrical frustum, flip near_left and near top onto the near plane
-    vec3 near_right = m_CameraFront + camera_left * (-m_NearPlaneLeft);
-    vec3 near_bottom = m_CameraFront - m_CameraUp * m_FocalLength * tan(m_fovy / 2);
-
-    // left, right, bottom and top for the plane whose origin is position and intersects the frustum
-    vec3 plane_left = distance_from_near / m_FocalLength * near_left;
-    vec3 plane_right = distance_from_near / m_FocalLength * near_right;
-    vec3 plane_top = distance_from_near / m_FocalLength * near_top;
-    vec3 plane_bottom = distance_from_near / m_FocalLength * near_bottom;
+    // frustum is simmetrical so right and bottom have the same values
+    float plane_horizontal_boundary = distance_from_near / m_FocalLength * m_NearPlaneLeft;
+    float plane_vertical_boundary = distance_from_near / m_FocalLength * near_top;
 
     // distances from camera's axis' planes, in fact the coordinates relative to the positive semiaxis of the camera's coordinate systems
     // if distance of position (function argument) from camera's plane whose normal is camera_left is greater than the distance of plane_left from the same plane, then position is outside frustum
 
-    // frustum is simmetrical so right and bottom have the same values
-    float horizontal_boundary = point_plane_distance(m_CameraFront, camera_left, plane_left);
-    float vertical_boundary = point_plane_distance(m_CameraFront, camera_left, plane_left);
-
-    if (point_plane_distance(m_CameraFront, camera_left, position) > horizontal_boundary)
+    if (point_plane_distance(m_CameraFront, camera_left, position) > plane_horizontal_boundary)
         return false;
 
-    if (point_plane_distance(m_CameraFront, m_CameraUp, position) > horizontal_boundary)
+    if (point_plane_distance(m_CameraFront, m_CameraUp, position) > plane_vertical_boundary)
         return false;
 
     return true;

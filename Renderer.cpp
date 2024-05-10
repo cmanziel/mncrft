@@ -167,10 +167,6 @@ void Renderer::Draw(Terrain* terrain, Player* player)
 			glVertexAttribDivisor(i, 1);
 		}
 
-		// pass the model and projection matrices to the shaders via a uniform instead of as a vertex attribute
-		mat4 view = player->GetCam()->GetViewMat4();
-		mat4 proj = player->GetCam()->GetProjectionMat4();
-
 		int model_attrib_index = 11;
 
 		terrain_bufs->model->Bind();
@@ -197,6 +193,10 @@ void Renderer::Draw(Terrain* terrain, Player* player)
 
 		m_Shader->use();
 		glUniform1i(glGetUniformLocation(m_Shader->get_id(), "tex"), 0);
+
+		// pass the model and projection matrices to the shaders via a uniform instead of as a vertex attribute
+		mat4 view = player->GetCam()->GetViewMat4();
+		mat4 proj = player->GetCam()->GetProjectionMat4();
 
 		m_Shader->setUniformMatrix4fv("view", glm::value_ptr(view));
 		m_Shader->setUniformMatrix4fv("proj", glm::value_ptr(proj));
