@@ -35,6 +35,8 @@ void Input::KeyCallback(GLFWwindow* window, int key, int scancode, int action, i
 void Input::TogglePolygonMode()
 {
     m_TogglePolygonMode = !m_TogglePolygonMode;
+    
+    m_TogglePolygonMode ? glPolygonMode(GL_FRONT_AND_BACK, GL_FILL) : glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 }
 
 Player* Input::GetPlayer()

@@ -139,15 +139,21 @@ Renderer::Renderer()
 }
 
 
-void Renderer::Draw(Terrain* terrain, Player* player, int chunkNum)
+void Renderer::Draw(Terrain* terrain)
 {
 	// draw all the meshes generated to this point otherwise one mesh a frame will be drawn and the previous one not anymore
-	for (int i = 0; i < chunkNum; i++)
+	//for (int i = 0; i < terrain->m_Chunks.size(); i++)
+	for(int i = 0; i < terrain->m_Chunks.size(); i++)
 	{
 		Chunk* chunk = terrain->m_Chunks[i];
 		Mesh* mesh = chunk->GetMesh();
 
 		terrain_buffers* terrain_bufs = mesh->GetTerrainBufs();
+
+		// when the first not generated mesh is encountered stop drawing, it will be generated next frame
+		if (terrain_bufs == NULL)
+			return;
+
 		//offsets* buffers_offsets = mesh->GetTerrainOffsets();
 		offsets buffer_offsets = mesh->GetTerrainOffsets();
 
@@ -197,8 +203,8 @@ void Renderer::Draw(Terrain* terrain, Player* player, int chunkNum)
 		glUniform1i(glGetUniformLocation(m_Shader->get_id(), "tex"), 0);
 
 		// pass the model and projection matrices to the shaders via a uniform instead of as a vertex attribute
-		mat4 view = player->GetCam()->GetViewMat4();
-		mat4 proj = player->GetCam()->GetProjectionMat4();
+		mat4 view = chunk->GetPlayer()->GetCam()->GetViewMat4();
+		mat4 proj = chunk->GetPlayer()->GetCam()->GetProjectionMat4();
 
 		m_Shader->setUniformMatrix4fv("view", glm::value_ptr(view));
 		m_Shader->setUniformMatrix4fv("proj", glm::value_ptr(proj));

@@ -13,7 +13,7 @@ public:
 	Terrain(Player* player);
 	~Terrain();
 
-	void GenerateWorld(Player* player, int chunkNum);
+	void GenerateWorld(Player* player);
 
 	void GenerateMeshes(Chunk* chunk, int chunkNum);
 
@@ -21,6 +21,9 @@ public:
 	//void SetChunkSurroundings(Chunk* chunk, size_t indexInTerrain);
 	void SetChunkSurroundings(Chunk* chunk, vec3 chunkPlayerIsIn, int indexInTerrain);
 	std::vector<Chunk*> m_Chunks;
+
+	// index that keeps track of the chunk whose mesh needs to be generated in the current frame.
+	unsigned int m_CurrentChunk; // [0, m_Chunks.size() - 1]
 
 private:
 	terrain_buffers* m_Buffers;

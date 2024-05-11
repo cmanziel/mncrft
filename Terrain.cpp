@@ -5,6 +5,8 @@
 
  Terrain::Terrain(Player* player)
  {
+	 m_CurrentChunk = 0;
+
 	 int chunkX = player->GetChunkGridPosition().x;
 	 int chunkZ = player->GetChunkGridPosition().z;
 
@@ -113,7 +115,7 @@ void Terrain::GenerateWorld(Player* player)
 */
 
 
- void Terrain::GenerateWorld(Player* player, int chunkNum)
+ void Terrain::GenerateWorld(Player* player)
  {
 	 int chunkX = player->GetChunkGridPosition().x;
 	 int chunkZ = player->GetChunkGridPosition().z;
@@ -134,6 +136,12 @@ void Terrain::GenerateWorld(Player* player)
 
 			// mesh->Build(m_Buffers);
 		 //}
+
+		 // if the player doesn't change its positiom in the grid, keep generating the meshes that haven't beem yet
+		 // until the last one is generated
+
+		 if (m_CurrentChunk + 1 < m_Chunks.size())
+			 GenerateMeshes(m_Chunks[++m_CurrentChunk], m_CurrentChunk);
 
 		 return;
 	 }
@@ -181,9 +189,10 @@ void Terrain::GenerateWorld(Player* player)
 		 insertion_sort_chunks(m_Chunks, start, end, X_COORD);
 	 }
 
-	 // pass to this function the frame number which determines which chunk's mesh will be generated
-	 // by now, only this function could be locked to the fps rate because to generate the mesh is necessary to know which are the surrounding chunks
-	 GenerateMeshes(m_Chunks[chunkNum], chunkNum);
+	 // start generating meshes from the first one when player moves between chunks
+
+	 m_CurrentChunk = 0;
+	 GenerateMeshes(m_Chunks[m_CurrentChunk], m_CurrentChunk);
  }
 
  void Terrain::GenerateMeshes(Chunk* chunk, int chunkNum)
@@ -192,6 +201,8 @@ void Terrain::GenerateWorld(Player* player)
 	 Player* player = chunk->GetPlayer();
 
 	 SetChunkSurroundings(chunk, player->GetChunkGridPosition(), chunkNum);
+
+	 mesh->Build(m_Buffers);
  }
 
  void Terrain::SetChunkSurroundings(Chunk* chunk, vec3 chunkPlayerIsIn, int indexInTerrain)
