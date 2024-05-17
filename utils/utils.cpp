@@ -104,6 +104,17 @@ vec3 project_on_plane(vec3 v, vec3 gen1, vec3 gen2)
     return proj;
 }
 
+// u: vector to project onto, v: vector to be projected
+vec3 project_on_vector(vec3 u, vec3 v)
+{
+    vec3 proj;
+
+    vec3 u_dir = glm::normalize(u);
+
+    proj = u_dir * dot_product(v, u_dir);
+
+    return proj;
+}
 
 //void substitute_VertexBuffer(std::vector<uint8_t> source, std::vector<VertexBuffer*> dest)
 //{

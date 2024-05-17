@@ -51,7 +51,6 @@ int main()
 
     float start = glfwGetTime(); // time in seconds
     float timeFor60fps = 1.0  / 60.0;
-    int chunkNum = -1;
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(GLFWwin))
@@ -68,8 +67,8 @@ int main()
 
         if (deltaTime < timeFor60fps)
             continue;
-        else
-            start = currentFrame;
+        
+        start = currentFrame;
 
         player->GetCam()->UpdateTime(deltaTime);
 

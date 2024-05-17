@@ -22,6 +22,7 @@ float dot_product(const vec3 u, const vec3 v);
 
 // gen1 e gen2 sono i vettori della base del piano su cui proiettare v
 vec3 project_on_plane(vec3 v, vec3 gen1, vec3 gen2);
+vec3 project_on_vector(vec3 u, vec3 v);
 
 //void substitute_VertexBuffer(std::vector<uint8_t> source, std::vector<VertexBuffer*> dest)
 //{

@@ -13,10 +13,6 @@ void insertFaceTexCoords(float* coords, unsigned int blockID, int side);
 //	front, back, left, right, top, bottom
 //};
 
-enum axis {
-	x, y, z
-};
-
 //float face[] =
 //{
 //	0.0, 1.0, 0.0,
@@ -120,6 +116,7 @@ void Mesh::Build(terrain_buffers* terrainBufs)
 	m_TerrainOffsets.tex = m_Chunk->GetOffsetIntoBuffer() * num_of_faces * 2 * sizeof(float) * INDICES_PER_FACE;
 	m_TerrainOffsets.face_index = m_Chunk->GetOffsetIntoBuffer() * num_of_faces * sizeof(int);
 
+	m_BlocksAddedToMesh.clear();
 	m_ModelMats.clear();
 	m_TexCoords.clear();
 	m_Faces.clear();

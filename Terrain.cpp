@@ -139,9 +139,11 @@ void Terrain::GenerateWorld(Player* player)
 
 		 // if the player doesn't change its positiom in the grid, keep generating the meshes that haven't beem yet
 		 // until the last one is generated
-
-		 if (m_CurrentChunk + 1 < m_Chunks.size())
-			 GenerateMeshes(m_Chunks[++m_CurrentChunk], m_CurrentChunk);
+		 if (m_CurrentChunk < m_Chunks.size())
+		 {
+			 GenerateMeshes(m_Chunks[m_CurrentChunk], m_CurrentChunk);
+			 m_CurrentChunk++;
+		 }
 
 		 return;
 	 }
@@ -168,7 +170,7 @@ void Terrain::GenerateWorld(Player* player)
 		 {
 			 vec3 newChunkPos = player->GetChunkGridPosition() + offsetFromLastGridPos;
 
-			 Chunk* newChunk = new Chunk(newChunkPos, player, chunk->GetOffsetIntoBuffer());
+			 Chunk* newChunk = new Chunk(newChunkPos, player, chunk->GetOffsetIntoBuffer()); // give to the new chunk the offset in the buffer of the chunk that's being replaced
 
 			 delete chunk;
 			 m_Chunks[i] = newChunk;

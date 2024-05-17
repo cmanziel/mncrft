@@ -40,6 +40,7 @@ Camera::Camera()
 
 void Camera::Move(int dir)
 {
+    // modify m_CameraPos but also m_CameraFront
     float cameraStep = CAMERA_MOTION_SPEED * m_deltaTime;
 
     switch (dir)
@@ -67,6 +68,8 @@ void Camera::Move(int dir)
         default:
             break;
     }
+
+    m_CameraFront = m_CameraPos + m_CameraDir * m_FocalLength;
 }
 
 void Camera::Rotate(int dir)
@@ -112,72 +115,9 @@ void Camera::UpdateTime(float dt) {
 
 mat4 Camera::GetModelMat4(vec3 blockTrans, int side)
 {
-    vec3 translation = vec3(0.0, 0.0, 0.0);
-    float angle = 0.0;
-
-    angle = to_radians(angle);
-
-    mat4 rot_mat = mat4(1.0);
-
-    switch (side)
-    {
-    case top: {
-        translation = vec3(0.0, 1.0, 0.0);
-        angle = to_radians(-90.0);
-
-        rot_mat = mat4(
-            1, 0, 0, 0,
-            0, cos(angle), sin(angle), 0,
-            0, -sin(angle), cos(angle), 0,
-            0, 0, 0, 1
-        );
-    } break;
-
-    case right: {
-        translation = vec3(1.0, 0.0, 0.0);
-        angle = to_radians(90.0);
-
-        rot_mat = mat4(
-            cos(angle), 0, -sin(angle), 0,
-            0, 1, 0, 0,
-            sin(angle), 0, cos(angle), 0,
-            0, 0, 0, 1
-        );
-    } break;
-
-    case left: {
-        angle = to_radians(90.0);
-
-        rot_mat = mat4(
-            cos(angle), 0, -sin(angle), 0,
-            0, 1, 0, 0,
-            sin(angle), 0, cos(angle), 0,
-            0, 0, 0, 1
-        );
-    } break;
-
-    case bottom: {
-        angle = to_radians(-90.0);
-
-        rot_mat = mat4(
-            1, 0, 0, 0,
-            0, cos(angle), sin(angle), 0,
-            0, -sin(angle), cos(angle), 0,
-            0, 0, 0, 1
-        );
-    } break;
-
-    case back: {
-        translation = vec3(0.0, 0.0, -1.0);
-    } break;
-    }
-
     mat4 model = mat4(1.0);
 
     model = glm::translate(model, blockTrans);
-    //model = glm::translate(model, translation);
-
-    //model = model * rot_mat;
 
     return model;
 }
@@ -277,17 +217,21 @@ bool Camera::IsInsideFrustum(vec3 position)
     vec3 pos_from_camera = position - m_CameraPos;
     vec3 camera_left = glm::normalize(glm::cross(m_CameraUp, m_CameraDir));
 
-    // check if position is behind camera:
-    // project pos_from_camera onto the plane whose normal is m_CameraUp
-    // do cross product between projection and camera_left
-    // check against m_CmaeraUp
+    // project pos_from_camera on m_CameraDir
+    vec3 projection = project_on_vector(m_CameraDir, pos_from_camera);
 
-    // projection
-    vec3 projection = project_on_plane(pos_from_camera, m_CameraDir, camera_left);
-    vec3 projection_cross = glm::normalize(glm::cross(projection, camera_left));
+    // find t for the projection point on the m_CameraDir line
+    // if t < m_FocalLength then the point is behind the camera's near plane, the point on the m_CameraDir line one the near plane is: m_CameraPos + m_CameraDir * m_FocalLength
 
-    // if the cross product of projection and camera_left and m_CameraUp have opposite orientations then position is behind the camera
-    if (projection_cross + m_CameraUp == vec3(0.0, 0.0, 0.0))
+    float t = 0;
+    if (m_CameraDir.x != 0)
+        t = projection.x / m_CameraDir.x;
+    else if (m_CameraDir.y != 0)
+        t = projection.y / m_CameraDir.y;
+    else
+        t = projection.z / m_CameraDir.z;
+
+    if (t < m_FocalLength)
         return false;
 
     // check if position's distance from near plane is inside m_NearToFaeDistance

@@ -5,6 +5,10 @@
 #define CAMERA_MOTION_SPEED 30
 #define CAMERA_ROTATION_SPEED 50
 
+enum axis {
+	x, y, z
+};
+
 class Camera
 {
 public:
