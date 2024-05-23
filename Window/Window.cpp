@@ -4,6 +4,8 @@ Window::Window(Input* inputHandler)
 {
 	m_Window = glfwCreateWindow(1280, 960, "mc-gl", NULL, NULL);
 	m_InputHandler = inputHandler;
+	m_AspectRatio = 1280.0 / 960;
+
 	glfwSetWindowUserPointer(m_Window, this);
 
 	glfwMakeContextCurrent(m_Window);

@@ -29,7 +29,7 @@ Camera::Camera()
     m_CameraUp = glm::normalize(glm::cross(m_CameraDir, camera_left));
 
     float near_plane_top = m_FocalLength * tan(m_fovy / 2);
-    float aspect_ratio = 16.0 / 9; // get the actual aspect ratio from the window dimension
+    float aspect_ratio = 1280.0 / 960; // TODO: get the actual aspect ratio from the window class' field
     m_NearPlaneLeft = near_plane_top * aspect_ratio;
 
     //m_yaw = glm::degrees(glm::angle(vec3(1.0, 0.0, 0.0), m_CameraDir));
@@ -252,7 +252,9 @@ bool Camera::IsInsideFrustum(vec3 position)
     if (point_plane_distance(m_CameraFront, camera_left, position) > plane_horizontal_boundary)
         return false;
 
-    if (point_plane_distance(m_CameraFront, m_CameraUp, position) > plane_vertical_boundary)
+    // change m_CameraUp vector, now it's fixe to worldUp which is (0.0, 1.0, 0.0)
+    vec3 camera_up = glm::cross(m_CameraDir, camera_left);
+    if (point_plane_distance(m_CameraFront, camera_up, position) > plane_vertical_boundary)
         return false;
 
     return true;

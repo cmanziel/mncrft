@@ -17,11 +17,14 @@ public:
     GLFWwindow* GetGLFWWindow();
     Input* GetInputHandler();
     
+    float GetAspectRatio();
+
     void CheckKeyInput();
 
 private:
 	GLFWwindow* m_Window;
     Input* m_InputHandler;
+    float m_AspectRatio;
 
     static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
     {
