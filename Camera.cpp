@@ -211,11 +211,35 @@ vec3 Camera::GetPosition()
     return m_CameraPos;
 }
 
+// position; chunk's world position coordinates
+bool Camera::IsPosInFrontOfCamera(vec3 playerChunkGridPos, vec3 position)
+{
+    // don't use camera position, use player's chunk grid position
+    vec3 pos_from_player_chunk = position - playerChunkGridPos;
+
+    // project pos_from_player_chunk on m_CameraDir
+    vec3 projection = project_on_vector(m_CameraDir, pos_from_player_chunk);
+
+    float t = 0;
+    if (m_CameraDir.x != 0)
+        t = projection.x / m_CameraDir.x;
+    else if (m_CameraDir.y != 0)
+        t = projection.y / m_CameraDir.y;
+    else
+        t = projection.z / m_CameraDir.z;
+
+    if (t < 0.0)
+        return false;
+
+    return true;
+}
+
 bool Camera::IsInsideFrustum(vec3 position)
 {
+    vec3 camera_left = glm::normalize(glm::cross(m_CameraUp, m_CameraDir));
+
     // position coordinates relative to camera position
     vec3 pos_from_camera = position - m_CameraPos;
-    vec3 camera_left = glm::normalize(glm::cross(m_CameraUp, m_CameraDir));
 
     // project pos_from_camera on m_CameraDir
     vec3 projection = project_on_vector(m_CameraDir, pos_from_camera);

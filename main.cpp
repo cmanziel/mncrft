@@ -17,10 +17,22 @@
     * locked the game to 60fps and generate one mesh per frame 
 */
 
+#define _CRTDBG_MAP_ALLOC
+#include <cstdlib>
+#include <crtdbg.h>
+
+#ifdef _DEBUG
+#define DBG_NEW new ( _NORMAL_BLOCK , __FILE__ , __LINE__ )
+// Replace _NORMAL_BLOCK with _CLIENT_BLOCK if you want the
+// allocations to be of _CLIENT_BLOCK type
+#else
+#define DBG_NEW new
+#endif
+
+#include <iostream>
 #include "Renderer.h"
 #include "TextureAtlas/TextureAtlas.h"
 #include "Window/Window.h"
-#include <iostream>
 
 float currentFrame = 0.0f;
 float lastFrame = 0.0f;
@@ -29,13 +41,15 @@ int frames = 0;
 
 int main()
 {
+    _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+
     /* Initialize the library */
     if (!glfwInit())
         return -1;
 
-    Player* player = new Player();
+    Player* player = DBG_NEW Player();
     Input inputHandler = Input(player);
-    Window* window = new Window(&inputHandler);
+    Window* window = DBG_NEW Window(&inputHandler);
 
     GLFWwindow* GLFWwin = window->GetGLFWWindow();
 
@@ -45,12 +59,12 @@ int main()
         return -1;
     }
 
-    Renderer* renderer = new Renderer();
-    TextureAtlas* atlas = new TextureAtlas();
-    Terrain* terrain = new Terrain(player);
+    Renderer* renderer = DBG_NEW Renderer();
+    TextureAtlas* atlas = DBG_NEW TextureAtlas();
+    Terrain* terrain = DBG_NEW Terrain(player);
 
     float start = glfwGetTime(); // time in seconds
-    float timeFor60fps = 1.0  / 60.0;
+    float timeForFrameRate = 1.0 / 60.0;
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(GLFWwin))
@@ -63,9 +77,11 @@ int main()
         currentFrame = glfwGetTime();
         deltaTime = currentFrame - start;
 
-        printf("delta time: %f\n", deltaTime);
+        printf("frame rate: %f\n", 1.0 / (currentFrame - lastFrame));
 
-        if (deltaTime < timeFor60fps)
+        lastFrame = currentFrame;
+
+        if (deltaTime < timeForFrameRate)
             continue;
         
         start = currentFrame;
@@ -97,4 +113,8 @@ int main()
     delete window;
 
     glfwTerminate();
+
+    _CrtDumpMemoryLeaks();
+
+    return 0;
 }

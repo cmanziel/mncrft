@@ -83,6 +83,9 @@ Mesh::Mesh(Chunk* chunk)
 Mesh::~Mesh()
 {
 	//free(m_TerrainOffsets);
+	m_TexCoords.clear();
+	m_Faces.clear();
+	m_ModelMats.clear();
 }
 
 std::vector<int> Mesh::GetFacesIndex()

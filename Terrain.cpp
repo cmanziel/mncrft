@@ -122,85 +122,66 @@ void Terrain::GenerateWorld(Player* player)
 
 	 vec3 lastChunkGridPosition = player->GetLastChunkGridPosition();
 
-	 // if the player hasn't moved between chunks then no need to check the world boundaries
-	 // unless the world has not been created yet (when m_Chunks.size())
-	 if (chunkX == lastChunkGridPosition.x && chunkZ == lastChunkGridPosition.z && m_Chunks.size() > 0)
+	 // if player has moved between chunks, rearrange them and restart building the meshes accordingly
+	 if (chunkX != lastChunkGridPosition.x || chunkZ != lastChunkGridPosition.z)
 	 {
-		 //// create the meshes, if camera moved or rotated they will be different, very slow
-		 //for (int i = 0; i < m_Chunks.size(); i++)
-		 //{
-			// Chunk* c = m_Chunks[i];
-			// Mesh* mesh = c->GetMesh();
-
-			// SetChunkSurroundings(c, player->GetChunkGridPosition(), i);
-
-			// mesh->Build(m_Buffers);
-		 //}
-
-		 // if the player doesn't change its positiom in the grid, keep generating the meshes that haven't beem yet
-		 // until the last one is generated
-		 if (m_CurrentChunk < m_Chunks.size())
+		 for (int i = 0; i < m_Chunks.size(); i++)
 		 {
-			 GenerateMeshes(m_Chunks[m_CurrentChunk], m_CurrentChunk);
-			 m_CurrentChunk++;
+			 Chunk* chunk = m_Chunks[i];
+			 Mesh* mesh = chunk->GetMesh();
+
+			 vec3 offsetFromLastGridPos = player->GetLastChunkGridPosition() - chunk->GetPosition();
+
+			 vec3 distanceFromPlayer = player->GetChunkGridPosition() - chunk->GetPosition();
+
+			 if (abs(distanceFromPlayer.x) > CHUNK_RADIUS || abs(distanceFromPlayer.z) > CHUNK_RADIUS)
+			 {
+				 vec3 newChunkPos = player->GetChunkGridPosition() + offsetFromLastGridPos;
+
+				 Chunk* newChunk = new Chunk(newChunkPos, player, chunk->GetOffsetIntoBuffer()); // give to the new chunk the offset in the buffer of the chunk that's being replaced
+
+				 delete chunk;
+				 m_Chunks[i] = newChunk;
+			 }
 		 }
 
-		 return;
-	 }
+		 // sort the chunks by z coordinate first
+		 insertion_sort_chunks(m_Chunks, 0, m_Chunks.size() - 1, Z_COORD);
 
-	 // CHUNK_RADIUS * deltaPos: if deltaPos.coordinate > 0 i chunk vengono creati nella direzione positiva della coordinata
-	 // if deltaPos.coordinate < 0 i chunk vengono creati nella direzione negativa della coordinata
+		 // then sort subvector of the m_Chunks vector based on the x coordinate
+		 int chunkRowLength = CHUNK_RADIUS * 2 + 1;
 
-	 // this gives the right positions to the chunks but they are still not sorted
-	 // m_Chunks needs to be then sorted by sorting the "subarrays" with the same z coordinate
-
-	 // loop through all the chunks, the new chunk position is the new player grid position - the offset from the old player grid position and the chunk
-	 // then delete the old chunk and have m_Chunks[i] Chunk pointer point to the new allocated chunk
-
-	 for (int i = 0; i < m_Chunks.size(); i++)
-	 {
-		 Chunk* chunk = m_Chunks[i];
-		 Mesh* mesh = chunk->GetMesh();
-
-		 vec3 offsetFromLastGridPos = player->GetLastChunkGridPosition() - chunk->GetPosition();
-
-		 vec3 distanceFromPlayer = player->GetChunkGridPosition() - chunk->GetPosition();
-
-		 if (abs(distanceFromPlayer.x) > CHUNK_RADIUS || abs(distanceFromPlayer.z) > CHUNK_RADIUS)
+		 for (int i = 0; i < m_Chunks.size() / chunkRowLength; i++)
 		 {
-			 vec3 newChunkPos = player->GetChunkGridPosition() + offsetFromLastGridPos;
+			 int start = chunkRowLength * i;
+			 int end = start + chunkRowLength - 1;
 
-			 Chunk* newChunk = new Chunk(newChunkPos, player, chunk->GetOffsetIntoBuffer()); // give to the new chunk the offset in the buffer of the chunk that's being replaced
-
-			 delete chunk;
-			 m_Chunks[i] = newChunk;
+			 insertion_sort_chunks(m_Chunks, start, end, X_COORD);
 		 }
+
+		 m_CurrentChunk = 0;
 	 }
 
-	 // sort the chunks by z coordinate first
-	 insertion_sort_chunks(m_Chunks, 0, m_Chunks.size() - 1, Z_COORD);
-
-	 // then sort subvector of the m_Chunks vector based on the x coordinate
-	 int chunkRowLength = CHUNK_RADIUS * 2 + 1;
-
-	 for (int i = 0; i < m_Chunks.size() / chunkRowLength; i++)
+	 if (m_CurrentChunk >= m_Chunks.size())
 	 {
-		 int start = chunkRowLength * i;
-		 int end = start + chunkRowLength - 1;
-
-		 insertion_sort_chunks(m_Chunks, start, end, X_COORD);
+		 m_CurrentChunk = 0;
+		 //player->SetLastChunkGridPosition();
 	 }
 
 	 // start generating meshes from the first one when player moves between chunks
-
-	 m_CurrentChunk = 0;
 	 GenerateMeshes(m_Chunks[m_CurrentChunk], m_CurrentChunk);
+	 m_CurrentChunk++;
  }
 
  void Terrain::GenerateMeshes(Chunk* chunk, int chunkNum)
  {
+	 // TODO: check here if chunk is behind camera or not
+	 // if it isn't, call mesh->Build()
 	 Mesh* mesh = chunk->GetMesh();
 	 Player* player = chunk->GetPlayer();
+
+	 if (!player->GetCam()->IsPosInFrontOfCamera(player->GetChunkGridPosition(), chunk->GetPosition()))
+		 return;
 
 	 SetChunkSurroundings(chunk, player->GetChunkGridPosition(), chunkNum);
 
@@ -218,16 +199,9 @@ void Terrain::GenerateWorld(Player* player)
 	 vec3 chunkPos = chunk->GetPosition();
 
 	 //allocated memory for 4 pointers to the surrounding chunks
-	 Chunk** surr = (Chunk**)malloc(sizeof(Chunk*) * 4);
-
-	 if (surr == NULL)
-	 {
-		 printf("surrounding chunks not allocated");
-		 return;
-	 }
+	 Chunk* surr[4];
 
 	 // CHUNK_RADIUS * 2 + 1: length of a row of chunks
-
 	 if (chunkPos.x - 1 < playerChunkX - CHUNK_RADIUS)
 		 surr[left_chunk] = nullptr;
 	 else

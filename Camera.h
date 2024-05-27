@@ -24,6 +24,7 @@ public:
 	void Rotate(int dir);
 	void UpdateTime(float dt);
 
+	bool IsPosInFrontOfCamera(vec3 playerChunkGridPos, vec3 position);
 	bool IsInsideFrustum(vec3 position); // is the world spcae position passed as argument inside frustum
 
 private:

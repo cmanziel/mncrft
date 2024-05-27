@@ -150,9 +150,9 @@ void Renderer::Draw(Terrain* terrain)
 
 		terrain_buffers* terrain_bufs = mesh->GetTerrainBufs();
 
-		// when the first not generated mesh is encountered stop drawing, it will be generated next frame
+		// skip to the next chunk if the current one doesn't have vertices to be drawn this frame
 		if (terrain_bufs == NULL)
-			return;
+			continue;
 
 		//offsets* buffers_offsets = mesh->GetTerrainOffsets();
 		offsets buffer_offsets = mesh->GetTerrainOffsets();
