@@ -8,15 +8,10 @@
 
 void insertFaceTexCoords(float* coords, unsigned int blockID, int side);
 //mat4 transform_face(Camera* camera, float* face, int side, vec3 blockWorldPos);
-float to_radians(float angle);
 
 //enum sides {
 //	front, back, left, right, top, bottom
 //};
-
-enum axis {
-	x, y, z
-};
 
 //float face[] =
 //{
@@ -88,6 +83,9 @@ Mesh::Mesh(Chunk* chunk)
 Mesh::~Mesh()
 {
 	//free(m_TerrainOffsets);
+	m_TexCoords.clear();
+	m_Faces.clear();
+	m_ModelMats.clear();
 }
 
 std::vector<int> Mesh::GetFacesIndex()
@@ -121,15 +119,10 @@ void Mesh::Build(terrain_buffers* terrainBufs)
 	m_TerrainOffsets.tex = m_Chunk->GetOffsetIntoBuffer() * num_of_faces * 2 * sizeof(float) * INDICES_PER_FACE;
 	m_TerrainOffsets.face_index = m_Chunk->GetOffsetIntoBuffer() * num_of_faces * sizeof(int);
 
+	m_BlocksAddedToMesh.clear();
 	m_ModelMats.clear();
 	m_TexCoords.clear();
 	m_Faces.clear();
-
-	//for (Block* block : m_Chunk->GetBlocksVector())
-	//{
-	//	if(block->GetID() != air)
-	//		AddBlockToMesh(block);
-	//}
 
 	// skip the whole section of the chunk before the first air block
 	size_t start = (m_Chunk->GetLowestSolidHeight() - 1) * CHUNK_SIZE * CHUNK_SIZE;
@@ -138,7 +131,11 @@ void Mesh::Build(terrain_buffers* terrainBufs)
 	{
 		Block* block = m_Chunk->GetBlocksVector()[i];
 
-		if (block->GetID() != air)
+		Camera* cam = m_Chunk->GetPlayer()->GetCam();
+		bool isBlockInsideFrustum = cam->IsInsideFrustum(block->GetWorldPosition());
+		//bool isBlockInsideFrustum = true;
+
+		if (block->GetID() != air && isBlockInsideFrustum)
 			AddBlockToMesh(block);
 	}
 
