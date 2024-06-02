@@ -215,14 +215,14 @@ Block* Chunk::GetBlock(vec3 blockPos)
 {
 	if (blockPos.x > CHUNK_SIZE - 1 || blockPos.z > CHUNK_SIZE - 1)
 	{
-		return nullptr;
+		return NULL;
 	}
 
 	if (blockPos.y > CHUNK_HEIGHT - 1)
-		return nullptr;
+		return NULL;
 
 	if (blockPos.x < 0 || blockPos.y < 0 || blockPos.z < 0)
-		return nullptr;
+		return NULL;
 
 	unsigned int index = blockPos.y * CHUNK_SIZE * CHUNK_SIZE + blockPos.z * CHUNK_SIZE + blockPos.x;
 

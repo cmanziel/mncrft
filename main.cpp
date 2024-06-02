@@ -1,9 +1,6 @@
 /* TODO:
     1. make world generation faster:
-        I. don't allocate every chunk and then evaluate of which ones the mesh is going to be created
-        evaluate which chunks are in front of the player only by using their position, then allocate the chunks whose positions are those ones
-        of this chunks also generate the meshes
-        Can't have the same SetChunkSurroundings as before though
+        - allocated only chunks in front of the camera, set the other ones to nullptr
 
         - having a model matrix for every face is memory expensive, maybe use a block's world position as a vertex attribute and initalize the model matrix for the vertex inside the shader
 

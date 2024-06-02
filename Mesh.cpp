@@ -13,67 +13,6 @@ void insertFaceTexCoords(float* coords, unsigned int blockID, int side);
 //	front, back, left, right, top, bottom
 //};
 
-//float face[] =
-//{
-//	0.0, 1.0, 0.0,
-//	0.0, 0.0, 0.0,
-//	1.0, 0.0, 0.0,
-//	0.0, 1.0, 0.0,
-//	1.0, 0.0, 0.0,
-//	1.0, 1.0, 0.0
-//};
-
-//float face[] =
-//{
-//	// back
-//	0.0, 1.0, 0.0,
-//	0.0, 0.0, 0.0,
-//	1.0, 0.0, 0.0,
-//	0.0, 1.0, 0.0,
-//	1.0, 0.0, 0.0,
-//	1.0, 1.0, 0.0,
-//
-//	// front
-//	0.0, 1.0, 1.0,
-//	0.0, 0.0, 1.0,
-//	1.0, 0.0, 1.0,
-//	0.0, 1.0, 1.0,
-//	1.0, 0.0, 1.0,
-//	1.0, 1.0, 1.0,
-//
-//	//left
-//	0.0, 1.0, 0.0,
-//	0.0, 0.0, 0.0,
-//	0.0, 0.0, 1.0,
-//	0.0, 1.0, 0.0,
-//	0.0, 0.0, 1.0,
-//	0.0, 1.0, 1.0,
-//
-//	//right
-//	1.0, 1.0, 1.0,
-//	1.0, 0.0, 1.0,
-//	1.0, 0.0, 0.0,
-//	1.0, 1.0, 1.0,
-//	1.0, 0.0, 0.0,
-//	1.0, 1.0, 0.0,
-//
-//	//top
-//	0.0, 1.0, 0.0,
-//	0.0, 1.0, 1.0,
-//	1.0, 1.0, 1.0,
-//	0.0, 1.0, 0.0,
-//	1.0, 1.0, 1.0,
-//	1.0, 1.0, 0.0,
-//
-//	// bottom
-//	1.0, 0.0, 1.0,
-//	1.0, 0.0, 0.0,
-//	0.0, 0.0, 0.0,
-//	1.0, 0.0, 1.0,
-//	0.0, 0.0, 0.0,
-//	0.0, 0.0, 1.0
-//};
-
 Mesh::Mesh(Chunk* chunk)
 	: m_Chunk(chunk)
 {
@@ -155,14 +94,14 @@ void Mesh::AddBlockToMesh(Block* block)
 
 	// add face vertices to the mesh vertices
 	// add texture coordinates accroding to block id here in a separate function and not for every block
-	if (!IsAdjacentBlockSolid(block, vec3(blp.x, blp.y + 1, blp.z), nullptr)) {
+	if (!IsAdjacentBlockSolid(block, vec3(blp.x, blp.y + 1, blp.z), NULL)) {
 		AddFaceToMesh(block, top);
 		isAddedToMesh = true;
 		m_Faces.push_back(top);
 		//m_FacesAddedToMesh++;
 	}
 
-	if (!IsAdjacentBlockSolid(block, vec3(blp.x, blp.y - 1, blp.z), nullptr)) {
+	if (!IsAdjacentBlockSolid(block, vec3(blp.x, blp.y - 1, blp.z), NULL)) {
 		AddFaceToMesh(block, bottom);
 		isAddedToMesh = true;
 		m_Faces.push_back(bottom);
@@ -226,10 +165,10 @@ bool Mesh::IsAdjacentBlockSolid(Block* block, vec3 adjBlockPos, Chunk* adjChunk)
 	Block* adjBlock = m_Chunk->GetBlock(adjBlockPos);
 
 	// if adjBlock == nullptr means that the block that's being checked to add to the mesh is a block on the edge of the chunk which mesh is being created
-	if (adjBlock == nullptr)
+	if (adjBlock == NULL)
 	{
 		// if the chunk which mesh that's being created has no adjacent chunk, then the edge faces are all rendered
-		if (adjChunk == nullptr)
+		if (adjChunk == NULL)
 			return false;
 
 		// intialize the adjacent block in the adjacent chunk's local position to the position of this block, then change its x and z coords properly
