@@ -65,7 +65,7 @@ int main()
     Terrain* terrain = DBG_NEW Terrain(player);
 
     float start = glfwGetTime(); // time in seconds
-    float timeForFrameRate = 1.0 / 60.0;
+    float timeForFrameRate = 1.0 / 120.0;
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(GLFWwin))
@@ -78,12 +78,12 @@ int main()
         currentFrame = glfwGetTime();
         deltaTime = currentFrame - start;
 
-        printf("frame rate: %f\n", 1.0 / (currentFrame - lastFrame));
+        //printf("frame rate: %f\n", 1.0 / (currentFrame - lastFrame));
 
         lastFrame = currentFrame;
 
-        if (deltaTime < timeForFrameRate)
-            continue;
+        //if (deltaTime < timeForFrameRate)
+        //    continue;
         
         start = currentFrame;
 

@@ -53,13 +53,15 @@ Terrain::Terrain(Player* player)
 	{
 		for (int x = 0; x < CHUNK_RADIUS * 2 + 1; x++)
 		{
-			Chunk* c = m_Chunks[z][x];
-			Mesh* mesh = c->GetMesh();
+			//Chunk* c = m_Chunks[z][x];
+			//Mesh* mesh = c->GetMesh();
 
-			// using the chunk_offset for setting the chunk surroundings could be a problem if chunks are sorted
-			SetChunkSurroundings(c, vec3(x, 0, z));
+			//// using the chunk_offset for setting the chunk surroundings could be a problem if chunks are sorted
+			//SetChunkSurroundings(c, vec3(x, 0, z));
 
-			mesh->Build(m_Buffers);
+			//mesh->Build(m_Buffers);
+			GenerateMeshes(m_CurrentChunk);
+			m_CurrentChunk++;
 		}
 	}
 }
@@ -165,14 +167,11 @@ void Terrain::GenerateWorld(Player* player)
 				m_Chunks[rowZ][x] = newChunk;
 			}
 
-			// use the pointers to the entire rows to shift them
 			int i = 0;
 			int z = rowZ;
-			// problem: just shifts the first element of the rows
 			for (; i < CHUNK_RADIUS * 2; i++)
 			{
 				int ind = z + deltaPos.z;
-				//m_Chunks[z] = m_Chunks[ind];
 
 				for (int x = 0; x < CHUNK_RADIUS * 2 + 1; x++)
 				{
