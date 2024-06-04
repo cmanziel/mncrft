@@ -57,6 +57,6 @@ Vertex Shader:
 - two mat4 uniform variables: the view and projection matrices calculated in the Camera class whose values depened on the camera position and orientation in 3D space
 
 ## Some examples of how the development progressed:
-(images/chunk_no_shell.png)
+[image 1](images/chunk_no_shell.png)
 
-(images/chunk_shell.png)
+[image 2](images/chunk_shell.png)
