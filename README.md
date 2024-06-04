@@ -51,12 +51,21 @@ These buffers are given the size as if all the faces of a chunk where added to t
 ## Shaders
 Vertex Shader:
 - takes in six different vec3 attributes from pos_top to pos_back. Each of them represent the position of one of the vertices in the relative array.
-- six different vec2 attributes. Each of them represent the texture coordinates for the specific vertex being processed
+- six different vec2 attributes. Each of them represent the texture coordinates for the specific vertex being processed2
 - four vec4 attributes. Each of them represent a column of the model matrix that will transform the vertex. This is an instanced array whose value changes every six vertices, which is the number of vertices in a face.
 - an int attribute called "side": this is also an instaced attribute that changes every six vertices. It holds the current value from the buffer object whose data store comes from the Mesh's class m_Faces field. So it determines of which of of the block's faces the current vertex being processed is. According to that, one of the vec3 positions and vec2 texture coordinates is used
 - two mat4 uniform variables: the view and projection matrices calculated in the Camera class whose values depened on the camera position and orientation in 3D space
 
 ## Some examples of how the development progressed:
-![image 1](images/chunk_no_shell.png)
+Chunk of blocks without using a mesh:
+![chunk rendered before mesh creation](images/chunk_no_shell.png)
 
-![image 2](images/chunk_shell.png)
+When using a mesh:
+![chunk rendered with mesh](images/chunk_shell.png)
+
+Introduction of textures:
+![Texture for every face](images/textures.png)
+
+Use of noise in the chunk's generation:
+![Noise](images/chunk_with_noise.png)
+![Terrain](images/terrain.png)
