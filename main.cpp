@@ -39,6 +39,7 @@
 float currentFrame = 0.0f;
 float lastFrame = 0.0f;
 float deltaTime = 0.0f;
+int frames = 0;
 
 int main()
 {
@@ -65,6 +66,7 @@ int main()
     Terrain* terrain = DBG_NEW Terrain(player);
 
     float start = glfwGetTime(); // time in seconds
+
     float timeForFrameRate = 1.0 / 120.0;
 
     /* Loop until the user closes the window */

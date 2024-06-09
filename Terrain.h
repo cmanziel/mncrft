@@ -26,7 +26,7 @@ public:
 	~Terrain();
 
 	void GenerateWorld(Player* player);
-
+  
 	void GenerateMeshes(unsigned int chunkNum);
 
 	//gridIndex: vec3 which x and z coords are the indexes for the bidimensional array in memory m_Chunks
@@ -37,6 +37,9 @@ public:
 	// index that keeps track of the chunk whose mesh needs to be generated in the current frame.
 	unsigned int m_CurrentChunk; // [0, m_Chunks.size() - 1]
 	unsigned int m_TotalChunks; // total number of chunks
+
+	// index that keeps track of the chunk whose mesh needs to be generated in the current frame.
+	unsigned int m_CurrentChunk; // [0, m_Chunks.size() - 1]
 
 private:
 	terrain_buffers* m_Buffers;
