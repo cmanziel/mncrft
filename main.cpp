@@ -1,8 +1,10 @@
 /* TODO:
-    1. terrain meshes creation:
-        - every mesh is iterated through and frustum culling is done as part of the process in Mesh::Build()
-        - instead evaluate before which chunks are in the frustum space, save theìr indexes, and generate only the meshes of these ones
-        - there's no need to generate the meshes for every chunk in the terrain
+    1. make world generation faster:
+        - allocated only chunks in front of the camera, set the other ones to nullptr
+
+        - having a model matrix for every face is memory expensive, maybe use a block's world position as a vertex attribute and initalize the model matrix for the vertex inside the shader
+
+        - loop thorugh the meshes starting from the ones closer to the player so they're the first ones to be generated
 
     3. use a ray cast to break and add blocks (regenerate the mesh of the chunk that's being modified)
     4. add ligthing to the scene, initially use the jdh method, give east and west faces of a block different lighting simulating light coming from a certain direction
@@ -64,7 +66,8 @@ int main()
     Terrain* terrain = DBG_NEW Terrain(player);
 
     float start = glfwGetTime(); // time in seconds
-    float timeForFrameRate = 1.0 / 60.0;
+
+    float timeForFrameRate = 1.0 / 120.0;
 
     /* Loop until the user closes the window */
     while (!glfwWindowShouldClose(GLFWwin))
@@ -77,12 +80,12 @@ int main()
         currentFrame = glfwGetTime();
         deltaTime = currentFrame - start;
 
-        printf("frame rate: %f\n", 1.0 / (currentFrame - lastFrame));
+        //printf("frame rate: %f\n", 1.0 / (currentFrame - lastFrame));
 
         lastFrame = currentFrame;
 
-        if (deltaTime < timeForFrameRate)
-            continue;
+        //if (deltaTime < timeForFrameRate)
+        //    continue;
         
         start = currentFrame;
 

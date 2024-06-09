@@ -257,7 +257,7 @@ bool Camera::IsInsideFrustum(vec3 position)
 
     if (t < m_FocalLength)
         return false;
-
+    
     // check if position's distance from near plane is inside m_NearToFaeDistance
     float distance_from_near = point_plane_distance(m_CameraFront, m_CameraDir, position);
 
