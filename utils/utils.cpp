@@ -74,6 +74,48 @@ float to_radians(float angle)
     return angle_rad;
 }
 
+float point_plane_distance(vec3 plane_origin, vec3 plane_normal, vec3 point)
+{
+    float a = plane_normal.x;
+    float b = plane_normal.y;
+    float c = plane_normal.z;
+
+    float d = -(a * plane_origin.x + b * plane_origin.y + c * plane_origin.z);
+
+    float dist = abs((long)(a * point.x + b * point.y + c * point.z + d)) / sqrt(a * a + b * b + c * c);
+
+    return dist;
+}
+
+float dot_product(const vec3 u, const vec3 v)
+{
+    return u.x * v.x + u.y * v.y + u.z * v.z;
+}
+
+vec3 project_on_plane(vec3 v, vec3 gen1, vec3 gen2)
+{
+    vec3 proj;
+
+    float dot_gen1 = dot_product(gen1, v);
+    float dot_gen2 = dot_product(gen2, v);
+
+    proj = dot_gen1 * gen1 + dot_gen2 * gen2;
+
+    return proj;
+}
+
+// u: vector to project onto, v: vector to be projected
+vec3 project_on_vector(vec3 u, vec3 v)
+{
+    vec3 proj;
+
+    vec3 u_dir = glm::normalize(u);
+
+    proj = u_dir * dot_product(v, u_dir);
+
+    return proj;
+}
+
 //void substitute_VertexBuffer(std::vector<uint8_t> source, std::vector<VertexBuffer*> dest)
 //{
 //    unsigned int dest_index = 0;
