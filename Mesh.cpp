@@ -8,75 +8,9 @@
 
 void insertFaceTexCoords(float* coords, unsigned int blockID, int side);
 //mat4 transform_face(Camera* camera, float* face, int side, vec3 blockWorldPos);
-float to_radians(float angle);
 
 //enum sides {
 //	front, back, left, right, top, bottom
-//};
-
-enum axis {
-	x, y, z
-};
-
-//float face[] =
-//{
-//	0.0, 1.0, 0.0,
-//	0.0, 0.0, 0.0,
-//	1.0, 0.0, 0.0,
-//	0.0, 1.0, 0.0,
-//	1.0, 0.0, 0.0,
-//	1.0, 1.0, 0.0
-//};
-
-//float face[] =
-//{
-//	// back
-//	0.0, 1.0, 0.0,
-//	0.0, 0.0, 0.0,
-//	1.0, 0.0, 0.0,
-//	0.0, 1.0, 0.0,
-//	1.0, 0.0, 0.0,
-//	1.0, 1.0, 0.0,
-//
-//	// front
-//	0.0, 1.0, 1.0,
-//	0.0, 0.0, 1.0,
-//	1.0, 0.0, 1.0,
-//	0.0, 1.0, 1.0,
-//	1.0, 0.0, 1.0,
-//	1.0, 1.0, 1.0,
-//
-//	//left
-//	0.0, 1.0, 0.0,
-//	0.0, 0.0, 0.0,
-//	0.0, 0.0, 1.0,
-//	0.0, 1.0, 0.0,
-//	0.0, 0.0, 1.0,
-//	0.0, 1.0, 1.0,
-//
-//	//right
-//	1.0, 1.0, 1.0,
-//	1.0, 0.0, 1.0,
-//	1.0, 0.0, 0.0,
-//	1.0, 1.0, 1.0,
-//	1.0, 0.0, 0.0,
-//	1.0, 1.0, 0.0,
-//
-//	//top
-//	0.0, 1.0, 0.0,
-//	0.0, 1.0, 1.0,
-//	1.0, 1.0, 1.0,
-//	0.0, 1.0, 0.0,
-//	1.0, 1.0, 1.0,
-//	1.0, 1.0, 0.0,
-//
-//	// bottom
-//	1.0, 0.0, 1.0,
-//	1.0, 0.0, 0.0,
-//	0.0, 0.0, 0.0,
-//	1.0, 0.0, 1.0,
-//	0.0, 0.0, 0.0,
-//	0.0, 0.0, 1.0
 //};
 
 Mesh::Mesh(Chunk* chunk)
@@ -88,6 +22,9 @@ Mesh::Mesh(Chunk* chunk)
 Mesh::~Mesh()
 {
 	//free(m_TerrainOffsets);
+	m_TexCoords.clear();
+	m_Faces.clear();
+	m_ModelMats.clear();
 }
 
 std::vector<int> Mesh::GetFacesIndex()
@@ -121,15 +58,10 @@ void Mesh::Build(terrain_buffers* terrainBufs)
 	m_TerrainOffsets.tex = m_Chunk->GetOffsetIntoBuffer() * num_of_faces * 2 * sizeof(float) * INDICES_PER_FACE;
 	m_TerrainOffsets.face_index = m_Chunk->GetOffsetIntoBuffer() * num_of_faces * sizeof(int);
 
+	m_BlocksAddedToMesh.clear();
 	m_ModelMats.clear();
 	m_TexCoords.clear();
 	m_Faces.clear();
-
-	//for (Block* block : m_Chunk->GetBlocksVector())
-	//{
-	//	if(block->GetID() != air)
-	//		AddBlockToMesh(block);
-	//}
 
 	// skip the whole section of the chunk before the first air block
 	size_t start = (m_Chunk->GetLowestSolidHeight() - 1) * CHUNK_SIZE * CHUNK_SIZE;
@@ -138,7 +70,11 @@ void Mesh::Build(terrain_buffers* terrainBufs)
 	{
 		Block* block = m_Chunk->GetBlocksVector()[i];
 
-		if (block->GetID() != air)
+		Camera* cam = m_Chunk->GetPlayer()->GetCam();
+		bool isBlockInsideFrustum = cam->IsInsideFrustum(block->GetWorldPosition());
+		//bool isBlockInsideFrustum = true;
+
+		if (block->GetID() != air && isBlockInsideFrustum)
 			AddBlockToMesh(block);
 	}
 
@@ -158,14 +94,14 @@ void Mesh::AddBlockToMesh(Block* block)
 
 	// add face vertices to the mesh vertices
 	// add texture coordinates accroding to block id here in a separate function and not for every block
-	if (!IsAdjacentBlockSolid(block, vec3(blp.x, blp.y + 1, blp.z), nullptr)) {
+	if (!IsAdjacentBlockSolid(block, vec3(blp.x, blp.y + 1, blp.z), NULL)) {
 		AddFaceToMesh(block, top);
 		isAddedToMesh = true;
 		m_Faces.push_back(top);
 		//m_FacesAddedToMesh++;
 	}
 
-	if (!IsAdjacentBlockSolid(block, vec3(blp.x, blp.y - 1, blp.z), nullptr)) {
+	if (!IsAdjacentBlockSolid(block, vec3(blp.x, blp.y - 1, blp.z), NULL)) {
 		AddFaceToMesh(block, bottom);
 		isAddedToMesh = true;
 		m_Faces.push_back(bottom);
@@ -229,10 +165,10 @@ bool Mesh::IsAdjacentBlockSolid(Block* block, vec3 adjBlockPos, Chunk* adjChunk)
 	Block* adjBlock = m_Chunk->GetBlock(adjBlockPos);
 
 	// if adjBlock == nullptr means that the block that's being checked to add to the mesh is a block on the edge of the chunk which mesh is being created
-	if (adjBlock == nullptr)
+	if (adjBlock == NULL)
 	{
 		// if the chunk which mesh that's being created has no adjacent chunk, then the edge faces are all rendered
-		if (adjChunk == nullptr)
+		if (adjChunk == NULL)
 			return false;
 
 		// intialize the adjacent block in the adjacent chunk's local position to the position of this block, then change its x and z coords properly

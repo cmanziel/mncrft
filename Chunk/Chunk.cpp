@@ -98,6 +98,7 @@ Chunk::Chunk(vec3 position, Player* player, unsigned int offset)
 				vec3 blockWorldPos = vec3(m_Position.x * CHUNK_SIZE + x, y, m_Position.z * CHUNK_SIZE + z);
 
 				Block* block = new Block(vec3(x, y, z), blockWorldPos, ID); // give the block a position based on the chunk position and its position in the chunk
+
 				m_Blocks.push_back(block);
 			}
 		}
@@ -161,24 +162,12 @@ Chunk::Chunk(Chunk& other, Player* player)
 	m_Player = other.m_Player;
 
 	// set surroudning chunks:
-	// iterate through other's m_Surrounding array and copy values in this->m_Surrounding
-	Chunk** surr = (Chunk**)malloc(sizeof(Chunk*) * 4);
+	// iterate through other's m_Surrounding array and copy values
 
-	if (surr == NULL)
+	for (int i = 0; i < 4; i++)
 	{
-		printf("surrounding chunks not allocated\n");
-		return;
+		m_Surrounding[i] = other.m_Surrounding[i];
 	}
-
-	//for (int i = 0; i < 4; i++)
-	//{
-	//	if (other.m_Surrounding[i] == NULL)
-	//		surr[i] = NULL;
-	//	else
-	//		surr[i] = other.m_Surrounding[i];
-	//}
-
-	m_Surrounding = other.m_Surrounding;
 
 	// operator= defined in Mesh class
 	// by doing m_Mesh = other.m_Mesh you are still assignign pointers to one another
@@ -226,14 +215,14 @@ Block* Chunk::GetBlock(vec3 blockPos)
 {
 	if (blockPos.x > CHUNK_SIZE - 1 || blockPos.z > CHUNK_SIZE - 1)
 	{
-		return nullptr;
+		return NULL;
 	}
 
 	if (blockPos.y > CHUNK_HEIGHT - 1)
-		return nullptr;
+		return NULL;
 
 	if (blockPos.x < 0 || blockPos.y < 0 || blockPos.z < 0)
-		return nullptr;
+		return NULL;
 
 	unsigned int index = blockPos.y * CHUNK_SIZE * CHUNK_SIZE + blockPos.z * CHUNK_SIZE + blockPos.x;
 
@@ -242,7 +231,10 @@ Block* Chunk::GetBlock(vec3 blockPos)
 
 void Chunk::SetSurroundings(Chunk** surr)
 {
-	m_Surrounding = surr;
+	for (int i = 0; i < 4; i++)
+	{
+		m_Surrounding[i] = surr[i];
+	}
 }
 
 // TODO: the blocks' world positions should be updated when a chunk position is modified via Terrain::GenerateWorld
@@ -367,7 +359,12 @@ Chunk& Chunk::operator= (Chunk& other)
 	*m_NoiseMap = *other.m_NoiseMap;
 
 	// for m_Surrounding assign just the pointers
-	m_Surrounding = other.m_Surrounding;
+	/*m_Surrounding = other.m_Surrounding;*/
+
+	for (int i = 0; i < 4; i++)
+	{
+		m_Surrounding[i] = other.m_Surrounding[i];
+	}
 
 	//// here assign pointers because memory for every surrounding chunk was not allocated
 	//for (int i = 0; i < 4; i++)
