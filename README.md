@@ -58,14 +58,14 @@ Vertex Shader:
 
 ## Some examples of how the development progressed:
 Chunk of blocks without using a mesh:
-![chunk rendered before mesh creation](images/chunk_no_shell.png)
+![chunk rendered before mesh creation](images/no_shell.png)
 
 When using a mesh:
-![chunk rendered with mesh](images/chunk_shell.png)
+![chunk rendered with mesh](images/shell.png)
 
 Introduction of textures:
 ![Texture for every face](images/textures.png)
 
 Use of noise in the chunk's generation:
-![Noise](images/chunk_with_noise.png)
+![Noise](images/noise.png)
 ![Terrain](images/terrain.png)
