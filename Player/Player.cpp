@@ -20,6 +20,11 @@ Player::Player()
 	m_LastGridPosition = m_ChunkGridPosition;
 }
 
+Player::~Player()
+{
+	delete m_PlayerCam;
+}
+
 int Player::GetChunkRadius()
 {
 	return m_ChunkRadius;
@@ -58,9 +63,4 @@ vec3 Player::GetLastChunkGridPosition()
 void Player::SetLastChunkGridPosition()
 {
 	m_LastGridPosition = m_ChunkGridPosition;
-}
-
-Player::~Player()
-{
-	delete m_PlayerCam;
 }

@@ -1,13 +1,15 @@
 /* TODO:
     1. make world generation faster:
-        - allocated only chunks in front of the camera, set the other ones to nullptr
-
         - having a model matrix for every face is memory expensive, maybe use a block's world position as a vertex attribute and initalize the model matrix for the vertex inside the shader
 
         - loop thorugh the meshes starting from the ones closer to the player so they're the first ones to be generated
 
-    3. use a ray cast to break and add blocks (regenerate the mesh of the chunk that's being modified)
-    4. add ligthing to the scene, initially use the jdh method, give east and west faces of a block different lighting simulating light coming from a certain direction
+    2. use a ray cast to break and add blocks (regenerate the mesh of the chunk that's being modified):
+        - loop through every superficial block, get the index with the solid column height
+        - call the hit method to see if the camera ray intersected it within the right distance from the player
+        - set the solid block's ID to air
+
+    3. add ligthing to the scene, initially use the jdh method, give east and west faces of a block different lighting simulating light coming from a certain direction
 */
 
 /* TODO:
