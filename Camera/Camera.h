@@ -1,6 +1,7 @@
 #pragma once
 
-#include "utils/utils.h"
+#include "../utils/utils.h"
+#include "../Player/Ray/Ray.h"
 
 #define CAMERA_MOTION_SPEED 30
 #define CAMERA_ROTATION_SPEED 50
@@ -12,7 +13,7 @@ enum axis {
 class Camera
 {
 public:
-	Camera();
+	Camera(vec3 playerPos);
 	
 	mat4 GetMVP(vec3 blockTrans);
 	mat4 GetModelMat4(vec3 blockTrans, int side);
@@ -20,6 +21,7 @@ public:
 	mat4 GetViewMat4();
 
 	vec3 GetPosition();
+	vec3 GetDirection();
 	void Move(int dir);
 	void Rotate(int dir);
 	void UpdateTime(float dt);

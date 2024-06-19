@@ -28,8 +28,6 @@ void Input::KeyCallback(GLFWwindow* window, int key, int scancode, int action, i
                 glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
     }
-
-    m_Player->UpdateChunkGridPosition();
 }
 
 void Input::TogglePolygonMode()

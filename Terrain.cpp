@@ -4,12 +4,13 @@
 #include <iostream>
 
 Terrain::Terrain(Player* player)
+	: m_Player(player)
 {
 	m_CurrentChunk = 0;
 	m_TotalChunks = (CHUNK_RADIUS * 2 + 1) * (CHUNK_RADIUS * 2 + 1);
 
-	int chunkX = player->GetChunkGridPosition().x;
-	int chunkZ = player->GetChunkGridPosition().z;
+	int chunkX = m_Player->GetChunkGridPosition().x;
+	int chunkZ = m_Player->GetChunkGridPosition().z;
 
 	int startZ = chunkZ - CHUNK_RADIUS;
 	int startX = chunkX - CHUNK_RADIUS;
@@ -20,7 +21,7 @@ Terrain::Terrain(Player* player)
 		{
 			vec3 pos = vec3(startX + x, 0, startZ + z);
 
-			Chunk* chunk = new Chunk(pos, player, chunk_offset);
+			Chunk* chunk = new Chunk(pos, m_Player, chunk_offset);
 
 			m_Chunks[z][x] = chunk;
 
@@ -84,12 +85,17 @@ Terrain::~Terrain()
 	}
 }
 
-void Terrain::GenerateWorld(Player* player)
+Player* Terrain::GetPlayer()
 {
-	int chunkX = player->GetChunkGridPosition().x;
-	int chunkZ = player->GetChunkGridPosition().z;
+	return m_Player;
+}
 
-	vec3 lastChunkGridPosition = player->GetLastChunkGridPosition();
+void Terrain::GenerateWorld()
+{
+	int chunkX = m_Player->GetChunkGridPosition().x;
+	int chunkZ = m_Player->GetChunkGridPosition().z;
+
+	vec3 lastChunkGridPosition = m_Player->GetLastChunkGridPosition();
 
 	// if player has moved between chunks, rearrange them and restart building the meshes accordingly
 	if (chunkX != lastChunkGridPosition.x || chunkZ != lastChunkGridPosition.z)
@@ -97,7 +103,7 @@ void Terrain::GenerateWorld(Player* player)
 		// having a bidimansional array avoids looping through every chunk
 		// for deleting and replacing see the old commits in mc-gl on github
 
-		vec3 deltaPos = player->GetChunkGridPosition() - player->GetLastChunkGridPosition();
+		vec3 deltaPos = m_Player->GetChunkGridPosition() - lastChunkGridPosition;
 
 		// "center" of the bidimensional array of chunk which x and z go from 0 to CHUNK_RADIUS * 2 + 1
 		vec3 chunkGridCenter = vec3(CHUNK_RADIUS, 0, CHUNK_RADIUS);
@@ -118,7 +124,7 @@ void Terrain::GenerateWorld(Player* player)
 			{
 				// allocate new Chunk with correct position, and assign to it the to-be-replaced chunk's offset into the terrain buffers
 				vec3 newPos = vec3(chunkX + offset.x, 0, chunkZ - CHUNK_RADIUS + z);
-				Chunk* newChunk = new Chunk(newPos, player, m_Chunks[z][columnX]->GetOffsetIntoBuffer());
+				Chunk* newChunk = new Chunk(newPos, m_Player, m_Chunks[z][columnX]->GetOffsetIntoBuffer());
 
 				newColumn[z] = newChunk;
 
@@ -158,7 +164,7 @@ void Terrain::GenerateWorld(Player* player)
 			for (int x = 0; x < CHUNK_RADIUS * 2 + 1; x++)
 			{
 				vec3 newPos = vec3(chunkX - CHUNK_RADIUS + x, 0, chunkZ + offset.z);
-				Chunk* newChunk = new Chunk(newPos, player, m_Chunks[rowZ][x]->GetOffsetIntoBuffer());
+				Chunk* newChunk = new Chunk(newPos, m_Player, m_Chunks[rowZ][x]->GetOffsetIntoBuffer());
 
 				newRow[x] = newChunk;
 
@@ -209,14 +215,13 @@ void Terrain::GenerateMeshes(unsigned int currentChunk)
 	Chunk* chunk = m_Chunks[currentZ][currentX];
 
 	Mesh* mesh = chunk->GetMesh();
-	Player* player = chunk->GetPlayer();
 
-	if (!player->GetCam()->IsPosInFrontOfCamera(player->GetChunkGridPosition(), chunk->GetPosition()))
+	if (!m_Player->GetCam()->IsPosInFrontOfCamera(m_Player->GetChunkGridPosition(), chunk->GetPosition()))
 		return;
 
 	SetChunkSurroundings(chunk, gridIndex);
 
-	mesh->Build(m_Buffers);
+	chunk->BuildMesh(m_Buffers);
 }
 
 void Terrain::SetChunkSurroundings(Chunk* chunk, vec3 gridIndex)
@@ -247,4 +252,15 @@ void Terrain::SetChunkSurroundings(Chunk* chunk, vec3 gridIndex)
 		surr[front_chunk] = m_Chunks[chunkZ + 1][chunkX];
 
 	chunk->SetSurroundings(surr);
+}
+
+void Terrain::UpdatePlayerChunkGridPosition()
+{
+	m_Player->SetLastChunkGridPosition();
+
+	vec3 playerPos = m_Player->GetCam()->GetPosition();
+
+	vec3 playerChunkGridPos = vec3((int)(playerPos.x / CHUNK_SIZE), 0, (int)(playerPos.z / CHUNK_SIZE));
+
+	m_Player->UpdateChunkGridPosition(playerChunkGridPos);
 }

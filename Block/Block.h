@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Buffer/Buffer.h"
-#include "utils/glm_types.h"
+#include "../Buffer/Buffer.h"
+#include "../utils/glm_types.h"
 
 #define VALUES_PER_FACE 18
 #define INDICES_PER_FACE 6

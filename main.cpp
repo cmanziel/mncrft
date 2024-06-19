@@ -63,9 +63,9 @@ int main()
         return -1;
     }
 
+    Terrain* terrain = DBG_NEW Terrain(player);
     Renderer* renderer = DBG_NEW Renderer();
     TextureAtlas* atlas = DBG_NEW TextureAtlas();
-    Terrain* terrain = DBG_NEW Terrain(player);
 
     float start = glfwGetTime(); // time in seconds
 
@@ -97,12 +97,10 @@ int main()
         //but only render every 1 / 60 seconds, 60 fps
         window->CheckKeyInput();
 
-        terrain->GenerateWorld(player);
+        terrain->UpdatePlayerChunkGridPosition();
+        terrain->GenerateWorld();
 
         renderer->Draw(terrain);
-
-        //sets the player's last chunk grid position to its current position
-        player->SetLastChunkGridPosition();
 
         /* Swap front and back buffers */
         glfwSwapBuffers(GLFWwin);

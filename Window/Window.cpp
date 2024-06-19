@@ -51,8 +51,9 @@ void Window::CheckKeyInput()
 	if (glfwGetKey(m_Window, GLFW_KEY_RIGHT) == GLFW_PRESS)
 		cam->Rotate(GLFW_KEY_RIGHT);
 
+	if (glfwGetKey(m_Window, GLFW_KEY_B) == GLFW_PRESS)
+		m_InputHandler->GetPlayer()->ChangeState();
+
 	if (glfwGetKey(m_Window, GLFW_KEY_P) == GLFW_PRESS)
 		m_InputHandler->TogglePolygonMode();
-
-	m_InputHandler->GetPlayer()->UpdateChunkGridPosition();
 }

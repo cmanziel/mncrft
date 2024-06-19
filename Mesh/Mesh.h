@@ -1,6 +1,9 @@
 #pragma once
 
-#include "Player/Player.h"
+//#include "Chunk/Chunk.h"
+
+#include "../Block/Block.h"
+#include "../Camera/Camera.h"
 
 /*
 	* pass a chunk to the class
@@ -22,33 +25,27 @@ typedef struct {
 	unsigned int face_index;
 } offsets;
 
-class Chunk; //forward declaration
-class Player;
-
 class Mesh
 {
 public:
-	Mesh(Chunk* chunk);
+	Mesh();
 	~Mesh();
 	Mesh& operator= (Mesh& other);
 
 	std::vector<int> GetFacesIndex();
 
-	void Build(terrain_buffers* terrainBufs);
+	void Clear();
+	void Build(terrain_buffers* terrainBufs, offsets terrainBuffersOffsets);
+	void AddFace(Block* block, Camera* cam, uint8_t side);
 
 	void AddBlockToMesh(Block* block);
-	void AddFaceToMesh(Block* block, uint8_t side);
-	bool IsAdjacentBlockSolid(Block* block, vec3 adjBlockPos, Chunk* adjChunk);
 
 	terrain_buffers* GetTerrainBufs();
+
 	//offsets* GetTerrainOffsets();
 	offsets GetTerrainOffsets();
 
-	std::vector<Block*> m_BlocksAddedToMesh;
-	//unsigned int m_FacesAddedToMesh;
-
 private:
-	Chunk* m_Chunk;
 	std::vector<float> m_TexCoords;
 	std::vector<int> m_Faces; // vector of enum sides values (see mesh.h) then interpreted correctly with glVertexAttriPointer in renderer->Draw()
 	std::vector<float> m_ModelMats;

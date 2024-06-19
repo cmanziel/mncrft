@@ -15,11 +15,9 @@ enum sides {
     front, back, left, right, top, bottom
 };
 
-Camera::Camera()
-    : m_fovy(M_PI / 4), m_FocalLength(0.1f), m_NearToFarDistance(99.9f)
+Camera::Camera(vec3 playerPos)
+    : m_fovy(M_PI / 4), m_FocalLength(0.1f), m_NearToFarDistance(99.9f), m_CameraPos(playerPos)
 {
-    // place the camera at the centre of the chunk and at CHUNK_HEIGHT
-    m_CameraPos = vec3(8.0, 20.0, 8.0);
     m_CameraDir = glm::normalize(vec3(0.0, 0.0, -1.0));
     //m_CameraDir = glm::normalize(-m_CameraPos);
 
@@ -209,6 +207,11 @@ mat4 Camera::GetMVP(vec3 blockTrans)
 vec3 Camera::GetPosition()
 {
     return m_CameraPos;
+}
+
+vec3 Camera::GetDirection()
+{
+    return m_CameraDir;
 }
 
 // position; chunk's world position coordinates

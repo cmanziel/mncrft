@@ -1,7 +1,6 @@
 #include "Mesh.h"
 #include <glm/ext/matrix_transform.hpp>
 #include <vector>
-#include <iostream>
 
 // blockAddedToMesh field stores the blocks that have a face which vertices are added to the mesh
 // in the renderer iterate through the blockAddedToMesh field set the MVP for the current vertices
@@ -13,8 +12,7 @@ void insertFaceTexCoords(float* coords, unsigned int blockID, int side);
 //	front, back, left, right, top, bottom
 //};
 
-Mesh::Mesh(Chunk* chunk)
-	: m_Chunk(chunk)
+Mesh::Mesh()
 {
 	m_TerrainBuffers = NULL;
 }
@@ -47,154 +45,41 @@ offsets Mesh::GetTerrainOffsets()
 	return m_TerrainOffsets;
 }
 
-void Mesh::Build(terrain_buffers* terrainBufs)
+void Mesh::Clear()
 {
-	if(m_TerrainBuffers == NULL)
-		m_TerrainBuffers = terrainBufs;
-
-	unsigned int num_of_faces = m_Chunk->GetBlocksVector().size() * FACES_PER_BLOCK;
-
-	m_TerrainOffsets.model = m_Chunk->GetOffsetIntoBuffer() * num_of_faces * 16 * sizeof(float);
-	m_TerrainOffsets.tex = m_Chunk->GetOffsetIntoBuffer() * num_of_faces * 2 * sizeof(float) * INDICES_PER_FACE;
-	m_TerrainOffsets.face_index = m_Chunk->GetOffsetIntoBuffer() * num_of_faces * sizeof(int);
-
-	m_BlocksAddedToMesh.clear();
 	m_ModelMats.clear();
 	m_TexCoords.clear();
 	m_Faces.clear();
+}
 
-	// skip the whole section of the chunk before the first air block
-	size_t start = (m_Chunk->GetLowestSolidHeight() - 1) * CHUNK_SIZE * CHUNK_SIZE;
+void Mesh::Build(terrain_buffers* terrainBufs, offsets terrainBuffersOffsets)
+{
+	if (m_TerrainBuffers == NULL)
+		m_TerrainBuffers = terrainBufs;
 
-	for (size_t i = start; i < m_Chunk->GetBlocksVector().size(); i++)
-	{
-		Block* block = m_Chunk->GetBlocksVector()[i];
-
-		Camera* cam = m_Chunk->GetPlayer()->GetCam();
-		bool isBlockInsideFrustum = cam->IsInsideFrustum(block->GetWorldPosition());
-		//bool isBlockInsideFrustum = true;
-
-		if (block->GetID() != air && isBlockInsideFrustum)
-			AddBlockToMesh(block);
-	}
+	m_TerrainOffsets = terrainBuffersOffsets;
 
 	m_TerrainBuffers->model->SubData(m_ModelMats.data(), m_ModelMats.size() * sizeof(float), m_TerrainOffsets.model);
 	m_TerrainBuffers->tex->SubData(m_TexCoords.data(), m_TexCoords.size() * sizeof(float), m_TerrainOffsets.tex);
 	m_TerrainBuffers->face_index->SubData_int(m_Faces.data(), m_Faces.size() * sizeof(int), m_TerrainOffsets.face_index);
 }
 
-// add vertices to the mesh by checking if adjacent blocks are solid or not
-void Mesh::AddBlockToMesh(Block* block)
+// add to the mesh the faces checked by the Chunk's class methods
+void Mesh::AddFace(Block* block, Camera* cam, uint8_t side)
 {
-	bool isAddedToMesh = false;
+	mat4 model = cam->GetModelMat4(block->GetWorldPosition(), side);
 
-	vec3 blp = block->GetLocalPosition();
-
-	Chunk** surr = m_Chunk->GetSurrounding();
-
-	// add face vertices to the mesh vertices
-	// add texture coordinates accroding to block id here in a separate function and not for every block
-	if (!IsAdjacentBlockSolid(block, vec3(blp.x, blp.y + 1, blp.z), NULL)) {
-		AddFaceToMesh(block, top);
-		isAddedToMesh = true;
-		m_Faces.push_back(top);
-		//m_FacesAddedToMesh++;
-	}
-
-	if (!IsAdjacentBlockSolid(block, vec3(blp.x, blp.y - 1, blp.z), NULL)) {
-		AddFaceToMesh(block, bottom);
-		isAddedToMesh = true;
-		m_Faces.push_back(bottom);
-		//m_FacesAddedToMesh++;
-	}
-
-	if (!IsAdjacentBlockSolid(block, vec3(blp.x - 1, blp.y, blp.z), surr[left_chunk])) {
-		AddFaceToMesh(block, left);
-		isAddedToMesh = true;
-		m_Faces.push_back(left);
-		//m_FacesAddedToMesh++;
-	}
-
-	if (!IsAdjacentBlockSolid(block, vec3(blp.x + 1, blp.y, blp.z), surr[right_chunk])) {
-		AddFaceToMesh(block, right);
-		isAddedToMesh = true;
-		m_Faces.push_back(right);
-		//m_FacesAddedToMesh++;
-	}
-
-	if (!IsAdjacentBlockSolid(block, vec3(blp.x, blp.y, blp.z + 1), surr[front_chunk])) {
-		AddFaceToMesh(block, front);
-		isAddedToMesh = true;
-		m_Faces.push_back(front);
-		//m_FacesAddedToMesh++;
-	}
-
-	if (!IsAdjacentBlockSolid(block, vec3(blp.x, blp.y, blp.z - 1), surr[back_chunk])) {
-		AddFaceToMesh(block, back);
-		isAddedToMesh = true;
-		m_Faces.push_back(back);
-		//m_FacesAddedToMesh++;
-	}
-
-	// if at least one face is added to the vertices array, add the block to the m_BlocksAddedToMesh vector
-	if (isAddedToMesh) {
-		m_BlocksAddedToMesh.push_back(block);
-	}
-}
-
-// side: 6 different directions of the block faces
-void Mesh::AddFaceToMesh(Block* block, uint8_t side)
-{
-	mat4 model = m_Chunk->GetPlayer()->GetCam()->GetModelMat4(block->GetWorldPosition(), side);
-
-	// turn those matrices into float arrays, then insert them in the vectors
 	float model_arr[16];
 
 	mat4_to_float(model, model_arr);
-	
+
 	float texCoords[VALUES_PER_TEX_COORD * INDICES_PER_FACE];
 
 	insertFaceTexCoords(texCoords, block->GetID(), side);
 
+	m_Faces.push_back(side);
 	m_ModelMats.insert(m_ModelMats.end(), model_arr, model_arr + 16);
 	m_TexCoords.insert(m_TexCoords.end(), texCoords, texCoords + std::size(texCoords));
-}
-
-bool Mesh::IsAdjacentBlockSolid(Block* block, vec3 adjBlockPos, Chunk* adjChunk)
-{
-	Block* adjBlock = m_Chunk->GetBlock(adjBlockPos);
-
-	// if adjBlock == nullptr means that the block that's being checked to add to the mesh is a block on the edge of the chunk which mesh is being created
-	if (adjBlock == NULL)
-	{
-		// if the chunk which mesh that's being created has no adjacent chunk, then the edge faces are all rendered
-		if (adjChunk == NULL)
-			return false;
-
-		// intialize the adjacent block in the adjacent chunk's local position to the position of this block, then change its x and z coords properly
-		vec3 blockPosInOtherChunk = block->GetLocalPosition();
-
-		if (adjBlockPos.x > CHUNK_SIZE - 1)
-			blockPosInOtherChunk.x = 0.0;
-
-		if (adjBlockPos.x < 0)
-			blockPosInOtherChunk.x = CHUNK_SIZE - 1;
-
-		if (adjBlockPos.z > CHUNK_SIZE - 1)
-			blockPosInOtherChunk.z = 0.0;
-
-		if (adjBlockPos.z < 0)
-			blockPosInOtherChunk.z = CHUNK_SIZE - 1;
-
-		// if the position calculated has an air block placed at it, don't add face to the mesh
-		// GetBlock function below won't return nullptr because the condition if the adjChunk is nullptr has alredy been checked
-		if (adjChunk->GetBlock(blockPosInOtherChunk)->GetID() != air)
-			return true;
-	}
-	else if (adjBlock->GetID() != air)
-		return true;
-
-	return false;
 }
 
 Mesh& Mesh::operator= (Mesh& other)
@@ -207,23 +92,11 @@ Mesh& Mesh::operator= (Mesh& other)
 		return other;
 	}
 
-	// TODO: problem: Chunk class has a Mesh field, Mesh class has a Chunk field
-	// this fields have their own operator= defined
-	// when they are called they cause an infinite loop: in the chunk's operator= the mesh field is assigned an other mesh, this calls the mesh field's operator= that assigns its chunk field, which calls operator= for the mesh, ecc.
-	*this->m_Chunk = *other.m_Chunk;
-
 	// assign pointers
 	this->m_TerrainBuffers = other.m_TerrainBuffers;
 
 	// assign the values for the offsets because the pointers will be freed when chunks are deleted
 	this->m_TerrainOffsets = other.m_TerrainOffsets;
-
-	m_BlocksAddedToMesh.resize(other.m_BlocksAddedToMesh.size());
-
-	for (int i = 0; i < other.m_BlocksAddedToMesh.size(); i++)
-	{
-		*this->m_BlocksAddedToMesh[i] = *other.m_BlocksAddedToMesh[i];
-	}
 
 	return *this;
 }

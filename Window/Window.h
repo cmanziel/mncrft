@@ -16,8 +16,6 @@ public:
 
     GLFWwindow* GetGLFWWindow();
     Input* GetInputHandler();
-    
-    float GetAspectRatio();
 
     void CheckKeyInput();
 
