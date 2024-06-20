@@ -28,7 +28,9 @@ public:
 
 	vec3 GetWorldPosition();
 	vec3 GetLocalPosition();
+
 	short GetID();
+	void SetID(short ID);
 
 private:
 	vec3 m_LocalPosition; // position in the chunk

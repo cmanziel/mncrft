@@ -27,6 +27,7 @@ public:
 	Player();
 	~Player();
 
+	uint8_t GetState();
 	void ChangeState();
 
 	vec3 GetWorldPosition();
@@ -39,13 +40,13 @@ public:
 
 	Camera* GetCam();
 
+	Ray m_Ray;
+	float m_BreakMaxDistance; // maximum distance from a block to be able to break it
+
 private:
 	Camera* m_PlayerCam;
 
 	uint8_t m_State;
-
-	Ray m_Ray;
-	float m_BreakMaxDistance; // maximum distance from a block to be able to break it
 
 	vec3 m_WorldPosition;
 

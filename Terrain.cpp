@@ -92,6 +92,11 @@ Player* Terrain::GetPlayer()
 
 void Terrain::GenerateWorld()
 {
+	// do block breaking here before the meshes are generated
+	if (m_Player->GetState() == STATE_BREAK)
+		BreakBlock();
+
+	// Wrap chunk rearranging in a separate function
 	int chunkX = m_Player->GetChunkGridPosition().x;
 	int chunkZ = m_Player->GetChunkGridPosition().z;
 
@@ -100,99 +105,7 @@ void Terrain::GenerateWorld()
 	// if player has moved between chunks, rearrange them and restart building the meshes accordingly
 	if (chunkX != lastChunkGridPosition.x || chunkZ != lastChunkGridPosition.z)
 	{
-		// having a bidimansional array avoids looping through every chunk
-		// for deleting and replacing see the old commits in mc-gl on github
-
-		vec3 deltaPos = m_Player->GetChunkGridPosition() - lastChunkGridPosition;
-
-		// "center" of the bidimensional array of chunk which x and z go from 0 to CHUNK_RADIUS * 2 + 1
-		vec3 chunkGridCenter = vec3(CHUNK_RADIUS, 0, CHUNK_RADIUS);
-
-		vec3 offset = vec3(deltaPos.x * CHUNK_RADIUS, 0, deltaPos.z * CHUNK_RADIUS);
-		//vec3 offset = CHUNK_RADIUS * deltaPos;
-
-		// chunkGridCenter - offset = center of the row or column to delete, if deltaPos.x and deltaPos.z != 0 it is the intersectiomn between the column and row to delete
-		
-		// delete column and allocate new Chunks with new positions
-		if (offset.x != 0)
-		{
-			int columnX = chunkGridCenter.x - offset.x; // this is either 0 or CHUNK_RADIUS * 2
-
-			std::vector<Chunk*> newColumn(CHUNK_RADIUS * 2 + 1);
-
-			for (int z = 0; z < CHUNK_RADIUS * 2 + 1; z++)
-			{
-				// allocate new Chunk with correct position, and assign to it the to-be-replaced chunk's offset into the terrain buffers
-				vec3 newPos = vec3(chunkX + offset.x, 0, chunkZ - CHUNK_RADIUS + z);
-				Chunk* newChunk = new Chunk(newPos, m_Player, m_Chunks[z][columnX]->GetOffsetIntoBuffer());
-
-				newColumn[z] = newChunk;
-
-				delete m_Chunks[z][columnX];
-
-				m_Chunks[z][columnX] = newChunk;
-			}
-
-			// translate every column by one in the direction opposite to the movement and place the new one in the freed space
-			// x += deltaPos.x, x increases or decreases depending on the direction of the movement
-			int i = 0;
-			int x = columnX;
-			for (; i < CHUNK_RADIUS * 2; i++)
-			{
-				for (int z = 0; z < CHUNK_RADIUS * 2 + 1; z++)
-				{
-					int ind = x + deltaPos.x;
-					m_Chunks[z][x] = m_Chunks[z][ind];
-				}
-
-				x += deltaPos.x;
-			}
-
-			// subsitute the last shifted column with the new one
-			for (int z = 0; z < CHUNK_RADIUS * 2 + 1; z++)
-			{
-				m_Chunks[z][x] = newColumn[z];
-			}
-		}
-		
-		// delete row and new Chunks along z axis, actually if deltaPos results != 0 both on x and y, the chunk at the intersection of the column and row will be processed twice (deleted and then a new is allocated on the column then the same for the row)
-		if (offset.z != 0)
-		{
-			int rowZ = chunkGridCenter.z - offset.z;
-
-			std::vector<Chunk*> newRow(CHUNK_RADIUS * 2 + 1);
-			for (int x = 0; x < CHUNK_RADIUS * 2 + 1; x++)
-			{
-				vec3 newPos = vec3(chunkX - CHUNK_RADIUS + x, 0, chunkZ + offset.z);
-				Chunk* newChunk = new Chunk(newPos, m_Player, m_Chunks[rowZ][x]->GetOffsetIntoBuffer());
-
-				newRow[x] = newChunk;
-
-				delete m_Chunks[rowZ][x];
-
-				m_Chunks[rowZ][x] = newChunk;
-			}
-
-			int i = 0;
-			int z = rowZ;
-			for (; i < CHUNK_RADIUS * 2; i++)
-			{
-				int ind = z + deltaPos.z;
-
-				for (int x = 0; x < CHUNK_RADIUS * 2 + 1; x++)
-				{
-					m_Chunks[z][x] = m_Chunks[ind][x];
-				}
-
-				z += deltaPos.z;
-			}
-
-			for (int x = 0; x < CHUNK_RADIUS * 2 + 1; x++)
-			{
-				m_Chunks[z][x] = newRow[x];
-			}
-		}
-
+		RearrangeChunks();
 		// start generating meshes from the first one when player moves between chunks
 		m_CurrentChunk = 0;
 	}
@@ -260,7 +173,160 @@ void Terrain::UpdatePlayerChunkGridPosition()
 
 	vec3 playerPos = m_Player->GetCam()->GetPosition();
 
-	vec3 playerChunkGridPos = vec3((int)(playerPos.x / CHUNK_SIZE), 0, (int)(playerPos.z / CHUNK_SIZE));
+	// z: floor(playerPos.z / CHUNK_SIZE)
+
+	vec3 playerChunkGridPos = vec3(floor(playerPos.x / CHUNK_SIZE), 0, floor(playerPos.z / CHUNK_SIZE));
 
 	m_Player->UpdateChunkGridPosition(playerChunkGridPos);
+}
+
+void Terrain::RearrangeChunks()
+{
+	int chunkX = m_Player->GetChunkGridPosition().x;
+	int chunkZ = m_Player->GetChunkGridPosition().z;
+
+	vec3 lastChunkGridPosition = m_Player->GetLastChunkGridPosition();
+
+	vec3 deltaPos = m_Player->GetChunkGridPosition() - lastChunkGridPosition;
+
+	// "center" of the bidimensional array of chunk which x and z go from 0 to CHUNK_RADIUS * 2 + 1
+	vec3 chunkGridCenter = vec3(CHUNK_RADIUS, 0, CHUNK_RADIUS);
+
+	vec3 offset = vec3(deltaPos.x * CHUNK_RADIUS, 0, deltaPos.z * CHUNK_RADIUS);
+	//vec3 offset = CHUNK_RADIUS * deltaPos;
+
+	// chunkGridCenter - offset = center of the row or column to delete, if deltaPos.x and deltaPos.z != 0 it is the intersectiomn between the column and row to delete
+
+	// delete column and allocate new Chunks with new positions
+	if (offset.x != 0)
+	{
+		int columnX = chunkGridCenter.x - offset.x; // this is either 0 or CHUNK_RADIUS * 2
+
+		std::vector<Chunk*> newColumn(CHUNK_RADIUS * 2 + 1);
+
+		for (int z = 0; z < CHUNK_RADIUS * 2 + 1; z++)
+		{
+			// allocate new Chunk with correct position, and assign to it the to-be-replaced chunk's offset into the terrain buffers
+			vec3 newPos = vec3(chunkX + offset.x, 0, chunkZ - CHUNK_RADIUS + z);
+			Chunk* newChunk = new Chunk(newPos, m_Player, m_Chunks[z][columnX]->GetOffsetIntoBuffer());
+
+			newColumn[z] = newChunk;
+
+			delete m_Chunks[z][columnX];
+
+			m_Chunks[z][columnX] = newChunk;
+		}
+
+		// translate every column by one in the direction opposite to the movement and place the new one in the freed space
+		// x += deltaPos.x, x increases or decreases depending on the direction of the movement
+		int i = 0;
+		int x = columnX;
+		for (; i < CHUNK_RADIUS * 2; i++)
+		{
+			for (int z = 0; z < CHUNK_RADIUS * 2 + 1; z++)
+			{
+				int ind = x + deltaPos.x;
+				m_Chunks[z][x] = m_Chunks[z][ind];
+			}
+
+			x += deltaPos.x;
+		}
+
+		// subsitute the last shifted column with the new one
+		for (int z = 0; z < CHUNK_RADIUS * 2 + 1; z++)
+		{
+			m_Chunks[z][x] = newColumn[z];
+		}
+	}
+
+	// delete row and new Chunks along z axis, actually if deltaPos results != 0 both on x and y, the chunk at the intersection of the column and row will be processed twice (deleted and then a new is allocated on the column then the same for the row)
+	if (offset.z != 0)
+	{
+		int rowZ = chunkGridCenter.z - offset.z;
+
+		std::vector<Chunk*> newRow(CHUNK_RADIUS * 2 + 1);
+		for (int x = 0; x < CHUNK_RADIUS * 2 + 1; x++)
+		{
+			vec3 newPos = vec3(chunkX - CHUNK_RADIUS + x, 0, chunkZ + offset.z);
+			Chunk* newChunk = new Chunk(newPos, m_Player, m_Chunks[rowZ][x]->GetOffsetIntoBuffer());
+
+			newRow[x] = newChunk;
+
+			delete m_Chunks[rowZ][x];
+
+			m_Chunks[rowZ][x] = newChunk;
+		}
+
+		int i = 0;
+		int z = rowZ;
+		for (; i < CHUNK_RADIUS * 2; i++)
+		{
+			int ind = z + deltaPos.z;
+
+			for (int x = 0; x < CHUNK_RADIUS * 2 + 1; x++)
+			{
+				m_Chunks[z][x] = m_Chunks[ind][x];
+			}
+
+			z += deltaPos.z;
+		}
+
+		for (int x = 0; x < CHUNK_RADIUS * 2 + 1; x++)
+		{
+			m_Chunks[z][x] = newRow[x];
+		}
+	}
+}
+
+void Terrain::BreakBlock()
+{
+	// get the player's position in the chunk grid
+
+	int playerGridX = m_Player->GetChunkGridPosition().x;
+	int playerGridZ = m_Player->GetChunkGridPosition().z;
+
+	// increment the value of t for the player's ray
+	// determine in which chunk the relative point is in case the ray intersects a block in another chunk
+	// determine the block's local position by flooring the point's coordinates
+	// get the block from the chunk's block vector
+	// if the block's solid, set it's id to air
+
+	Ray ray = Ray(m_Player->GetCam()->GetCameraFront(), m_Player->GetCam()->GetDirection());
+
+	for (float t = 0.0; t < m_Player->m_BreakMaxDistance; t += 0.2)
+	{
+		//point p = m_Player->m_Ray.at(t);
+
+		point p = ray.at(t);
+
+		int pointXFromPlayer = floor(p.x / CHUNK_SIZE) - playerGridX; // if = 0 the point is still in the same chunk
+		int pointZFromPlayer = floor(p.z / CHUNK_SIZE) - playerGridZ;
+
+		// the indexes in m_Chunks for the point are:
+		// player's indexes in m_CHunks: m_Chunks[CHUNK_RADIUS][CHUNK_RADIUS]
+		// point: m_Chunks[CHUNK_RADIUS + pointZFromPlayer][CHUNK_RADIUS + pointXfFromPlayer]
+
+		int pointX = CHUNK_RADIUS + pointXFromPlayer;
+		int pointZ = CHUNK_RADIUS + pointZFromPlayer;
+
+		Chunk* chunk = m_Chunks[pointZ][pointX];
+
+		// evaluate the block's local position
+
+		int pLocalX = floor(p.x) - floor(p.x / CHUNK_SIZE) * CHUNK_SIZE;
+		int pLocalZ = floor(p.z) - floor(p.z / CHUNK_SIZE) * CHUNK_SIZE;
+
+		vec3 pointLocalPosition = vec3(pLocalX, floor(p.y), pLocalZ);
+
+		Block* blockToBreak = chunk->GetBlock(pointLocalPosition);
+
+		if (blockToBreak == NULL)
+			return;
+
+		if (blockToBreak->GetID() != air)
+		{
+			blockToBreak->SetID(air);
+			return; // as soon as a solid block is encountered exit the function
+		}
+	}
 }

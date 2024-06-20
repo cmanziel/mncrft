@@ -214,6 +214,16 @@ vec3 Camera::GetDirection()
     return m_CameraDir;
 }
 
+vec3 Camera::GetCameraFront()
+{
+    return m_CameraFront;
+}
+
+float Camera::GetFocalLength()
+{
+    return m_FocalLength;
+}
+
 // position; chunk's world position coordinates
 bool Camera::IsPosInFrontOfCamera(vec3 playerChunkGridPos, vec3 position)
 {

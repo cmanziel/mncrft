@@ -20,8 +20,12 @@ public:
 	mat4 GetProjectionMat4();
 	mat4 GetViewMat4();
 
+	float GetFocalLength();
+
 	vec3 GetPosition();
 	vec3 GetDirection();
+	vec3 GetCameraFront();
+
 	void Move(int dir);
 	void Rotate(int dir);
 	void UpdateTime(float dt);

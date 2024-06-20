@@ -106,6 +106,7 @@ Chunk::Chunk(Chunk& other)
 //	return m_Blocks[index];
 //}
 
+// index in the m_Blocks vector from x 
 Block* Chunk::GetBlock(vec3 blockPos)
 {
 	if (blockPos.x > CHUNK_SIZE - 1 || blockPos.z > CHUNK_SIZE - 1)

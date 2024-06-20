@@ -41,6 +41,11 @@ short Block::GetID() {
     return m_ID;
 }
 
+void Block::SetID(short ID)
+{
+    m_ID = ID;
+}
+
 // order in which vertices are inserted in faces for correct culling
 // counter-clockwise for back, bottom and right faces
 // clockwise the other ones

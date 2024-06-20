@@ -9,6 +9,7 @@ typedef vec3 point;
 class Ray
 {
 public:
+	Ray();
 	Ray(vec3 origin, vec3 dir);
 
 	point Origin() const;

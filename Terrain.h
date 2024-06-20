@@ -29,6 +29,9 @@ public:
 
 	void GenerateWorld();
 	void GenerateMeshes(unsigned int chunkNum);
+	void RearrangeChunks();
+
+	void BreakBlock();
 
 	void UpdatePlayerChunkGridPosition();
 
