@@ -326,6 +326,26 @@ void Terrain::BreakBlock()
 		if (blockToBreak->GetID() != air)
 		{
 			blockToBreak->SetID(air);
+
+			if (blockToBreak->GetLocalPosition().y == chunk->m_LowestSolidHeight && chunk->m_LowestSolidHeight - 1 > 0)
+				chunk->m_LowestSolidHeight--;
+
+			// set the surrounding chunk m_LoestSolidHeight field to the lowest out of the four
+			uint8_t lowest = chunk->m_LowestSolidHeight;
+
+			for (int i = 0; i < 4; i++)
+			{
+				if (chunk->GetSurrounding()[i]->m_LowestSolidHeight < lowest)
+					lowest = chunk->GetSurrounding()[i]->m_LowestSolidHeight;
+			}
+
+			chunk->m_LowestSolidHeight = lowest;
+
+			for (int i = 0; i < 4; i++)
+			{
+				chunk->GetSurrounding()[i]->m_LowestSolidHeight = lowest;
+			}
+
 			return; // as soon as a solid block is encountered exit the function
 		}
 	}

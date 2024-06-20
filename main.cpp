@@ -4,10 +4,10 @@
 
         - loop thorugh the meshes starting from the ones closer to the player so they're the first ones to be generated
 
-    2. use a ray cast to break and add blocks (regenerate the mesh of the chunk that's being modified):
-        - loop through every superficial block, get the index with the solid column height
-        - call the hit method to see if the camera ray intersected it within the right distance from the player
-        - set the solid block's ID to air
+    2. fix camera frustum culling
+
+    2. block breaking:
+        - do it on mouse input
 
     3. add ligthing to the scene, initially use the jdh method, give east and west faces of a block different lighting simulating light coming from a certain direction
 */

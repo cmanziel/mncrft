@@ -244,6 +244,7 @@ void Chunk::BuildMesh(terrain_buffers* terrainBufs)
 
 	// skip the whole section of the chunk before the first air block
 	size_t start = (m_LowestSolidHeight - 1) * CHUNK_SIZE * CHUNK_SIZE;
+	//size_t start = 0;
 
 	for (size_t i = start; i < m_Blocks.size(); i++)
 	{
@@ -329,39 +330,3 @@ bool Chunk::IsAdjacentBlockSolid(Block* block, vec3 adjBlockPos, Chunk* adjChunk
 
 	return false;
 }
-
-/*
-Chunk::Hit()
-{
-	loop through the surface blocks
-	call their hit method
-
-	for(superficials)
-		block->Hit();
-}
-*/
-
-/*
-Block::Hit()
-{
-	// loop through the faces and hit them
-	for(faces)
-	 face->Hit(); same procedure for hitting Plane done in PathTracer
-}
-*/
-
-/*
-bool face::Hit(const Ray& ray, const Camera& camera)
-{
-	float a = face.normal.x;
-	float b = face.normal.x;
-	float c = face.normal.x;
-	float d = face.normal.x;
-
-	float t = -(a * ray.origin().x + b * ray.origin().y + c * ray.origin().z + m_PlaneD) / (a * ray.direction().x + b * ray.direction().y + c * ray.direction().z);
-	if(t < camera->GetFocalLength() || t > playerBreakingDistance)
-		return false;
-
-	return true;
-}
-*/

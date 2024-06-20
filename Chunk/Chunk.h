@@ -63,6 +63,7 @@ public:
 
 	Chunk** GetSurrounding();
 
+	unsigned int m_LowestSolidHeight;
 private:
 	vec3 m_Position;
 	NoiseMap* m_NoiseMap;
@@ -71,5 +72,4 @@ private:
 	std::vector<Block*> m_Blocks;
 	Mesh* m_Mesh;
 	unsigned int m_OffsetIntoBuffer;
-	unsigned int m_LowestSolidHeight;
 };
