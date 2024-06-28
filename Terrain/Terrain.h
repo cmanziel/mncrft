@@ -13,7 +13,7 @@
 #endif
 
 #include <vector>
-#include "Chunk/Chunk.h"
+#include "../Chunk/Chunk.h"
 
 #define X_CHUNKS 4
 #define Y_CHUNKS 1

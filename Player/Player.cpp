@@ -39,9 +39,9 @@ uint8_t Player::GetState()
 	return m_State;
 }
 
-void Player::ChangeState()
+void Player::ChangeState(uint8_t state)
 {
-	m_State = m_State != STATE_BREAK ? STATE_BREAK : STATE_WATCH;
+	m_State = state;
 }
 
 void Player::UpdateChunkGridPosition(vec3 chunkGridPosition)

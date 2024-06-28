@@ -28,7 +28,7 @@ public:
 	~Player();
 
 	uint8_t GetState();
-	void ChangeState();
+	void ChangeState(uint8_t state);
 
 	vec3 GetWorldPosition();
 

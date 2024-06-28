@@ -3,7 +3,7 @@
 #define SHADER_H
 
 #include <GL/glew.h>
-#include "utils/glm_types.h"
+#include "../utils/glm_types.h"
 #include <glm/glm.hpp>
 #include <string>
 #include <sstream>

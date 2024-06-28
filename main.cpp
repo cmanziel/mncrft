@@ -4,10 +4,9 @@
 
         - loop thorugh the meshes starting from the ones closer to the player so they're the first ones to be generated
 
-    2. fix camera frustum culling
-
     2. block breaking:
-        - do it on mouse input
+        - camera direction and movement based on cursor movement
+        - better solution for breaking blocks at a chunk edge, for now every time a block is being broken the lowest solid height out of the chunk and its surroundings is evaluated then set as their lowest solid height
 
     3. add ligthing to the scene, initially use the jdh method, give east and west faces of a block different lighting simulating light coming from a certain direction
 */
@@ -34,7 +33,7 @@
 #endif
 
 #include <iostream>
-#include "Renderer.h"
+#include "Renderer/Renderer.h"
 #include "TextureAtlas/TextureAtlas.h"
 #include "Window/Window.h"
 
@@ -95,7 +94,7 @@ int main()
 
         // process input and genrate meshes accordingly every frame
         //but only render every 1 / 60 seconds, 60 fps
-        window->CheckKeyInput();
+        window->CheckInput();
 
         terrain->UpdatePlayerChunkGridPosition();
         terrain->GenerateWorld();

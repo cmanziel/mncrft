@@ -4,7 +4,7 @@
 #include "../Player/Ray/Ray.h"
 
 #define CAMERA_MOTION_SPEED 30
-#define CAMERA_ROTATION_SPEED 50
+#define CAMERA_ROTATION_SPEED 200
 
 enum axis {
 	x, y, z

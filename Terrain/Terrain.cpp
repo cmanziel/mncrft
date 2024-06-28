@@ -1,6 +1,6 @@
 #include "Terrain.h"
-#include "Chunk/Chunk.h"
-#include "utils/sort.h"
+#include "../Chunk/Chunk.h"
+#include "../utils/sort.h"
 #include <iostream>
 
 Terrain::Terrain(Player* player)

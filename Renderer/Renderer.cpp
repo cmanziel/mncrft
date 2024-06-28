@@ -74,7 +74,7 @@ Renderer::Renderer()
 		glVertexAttribPointer(i, VALUES_PER_VERTEX, GL_FLOAT, GL_FALSE, VALUES_PER_VERTEX * sizeof(float), (void*)0);
 	}
 
-	m_Shader = new Shader("shaders/shader.vs", "shaders/shader.fs");
+	m_Shader = new Shader("Shader/shaders/shader.vs", "Shader/shaders/shader.fs");
 	m_Shader->CreateProgram();
 }
 

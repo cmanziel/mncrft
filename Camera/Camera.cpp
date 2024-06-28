@@ -268,7 +268,10 @@ bool Camera::IsInsideFrustum(vec3 position)
     else
         t = projection.z / m_CameraDir.z;
 
-    if (t < m_FocalLength)
+    //if (t < m_FocalLength)
+    //    return false;
+
+    if (t < -1.0)
         return false;
     
     // check if position's distance from near plane is inside m_NearToFaeDistance
@@ -286,12 +289,12 @@ bool Camera::IsInsideFrustum(vec3 position)
     // distances from camera's axis' planes, in fact the coordinates relative to the positive semiaxis of the camera's coordinate systems
     // if distance of position (function argument) from camera's plane whose normal is camera_left is greater than the distance of plane_left from the same plane, then position is outside frustum
 
-    if (point_plane_distance(m_CameraFront, camera_left, position) > plane_horizontal_boundary)
+    if (point_plane_distance(m_CameraFront, camera_left, position) > plane_horizontal_boundary + 1.0)
         return false;
 
     // change m_CameraUp vector, now it's fixe to worldUp which is (0.0, 1.0, 0.0)
     vec3 camera_up = glm::cross(m_CameraDir, camera_left);
-    if (point_plane_distance(m_CameraFront, camera_up, position) > plane_vertical_boundary)
+    if (point_plane_distance(m_CameraFront, camera_up, position) > plane_vertical_boundary + 1.0)
         return false;
 
     return true;
