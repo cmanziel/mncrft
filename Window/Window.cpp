@@ -1,10 +1,13 @@
 #include "Window.h"
 
-Window::Window(Input* inputHandler)
+bool left = false;
+
+Window::Window(Input* inputHandler, unsigned int width, unsigned int height)
+	: m_Width(width), m_Height(height)
 {
-	m_Window = glfwCreateWindow(1280, 960, "mc-gl", NULL, NULL);
+	m_Window = glfwCreateWindow(m_Width, m_Height, "mc-gl", NULL, NULL);
 	m_InputHandler = inputHandler;
-	m_AspectRatio = 1280.0 / 960;
+	m_AspectRatio = (float)(m_Width) / m_Height;
 	glfwGetCursorPos(m_Window, &m_CursorPos.x, &m_CursorPos.y);
 	m_LastCursorPos = m_CursorPos;
 
@@ -78,6 +81,24 @@ void Window::CursorMovement()
 	if (&m_CursorPos.x == NULL || &m_CursorPos.y == NULL)
 	{
 		return;
+	}
+
+	if (m_CursorPos.x <= 0.0 || m_CursorPos.x >= (float)(m_Width - 1) || m_CursorPos.y <= 0.0 || m_CursorPos.y >= (float)(m_Height - 1))
+	{
+		if (!left)
+		{
+			glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			glfwSetCursorPos(m_Window, m_CursorPos.x + 1.0, m_CursorPos.y + 1.0);
+		}
+
+		left = true;
+	}
+	else
+	{
+		glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		if (glfwRawMouseMotionSupported())
+			glfwSetInputMode(m_Window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+		left = false;
 	}
 
 	if (m_CursorPos.x == m_LastCursorPos.x && m_CursorPos.y == m_LastCursorPos.y)

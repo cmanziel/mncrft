@@ -12,7 +12,6 @@
 #define DBG_NEW new
 #endif
 
-#include "../Block/Block.h"
 #include "../Noise/NoiseMap.h"
 #include "../Mesh/Mesh.h"
 #include "../Player/Player.h"
@@ -24,8 +23,6 @@
 enum surr_chunks {
 	left_chunk, right_chunk, front_chunk, back_chunk
 };
-
-class Mesh; // forward declaration
 
 /*
 	* chunk class needs m_Blocks field because every chunk hass a different structure initially and also it can be modified
@@ -47,7 +44,7 @@ public:
 
 	NoiseMap* GetNoiseMap();
 
-	void BuildMesh(terrain_buffers* terrainBufs);
+	void BuildMesh(terrain_buffers* terrainBufs, Block* blockPointed);
 	Mesh* GetMesh();
 	void AddBlockToMesh(Block* block);
 	bool IsAdjacentBlockSolid(Block* block, vec3 adjBlockPos, Chunk* adjChunk);
@@ -64,6 +61,7 @@ public:
 	Chunk** GetSurrounding();
 
 	unsigned int m_LowestSolidHeight;
+	Block* m_BlockPointed;
 private:
 	vec3 m_Position;
 	NoiseMap* m_NoiseMap;

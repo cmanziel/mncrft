@@ -43,7 +43,7 @@ public:
 	// index that keeps track of the chunk whose mesh needs to be generated in the current frame.
 	unsigned int m_CurrentChunk; // [0, m_Chunks.size() - 1]
 	unsigned int m_TotalChunks; // total number of chunks
-
+	Block* m_BlockPointed;
 private:
 	terrain_buffers* m_Buffers;
 	Player* m_Player;

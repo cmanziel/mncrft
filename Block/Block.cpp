@@ -1,7 +1,7 @@
 #include "Block.h"
 
 Block::Block(vec3 localPos, vec3 worldPos, short ID)
-    : m_LocalPosition(localPos), m_WorldPosition(worldPos), m_ID(ID)
+    : m_LocalPosition(localPos), m_WorldPosition(worldPos), m_ID(ID), m_IsPointed(false)
 {
 
 }
@@ -11,6 +11,7 @@ Block::Block(Block& other)
     m_LocalPosition = other.m_LocalPosition;
     m_WorldPosition = other.m_WorldPosition;
     m_ID = other.m_ID;
+    m_IsPointed = other.m_IsPointed;
 }
 
 Block& Block::operator=(Block& other)
@@ -22,6 +23,8 @@ Block& Block::operator=(Block& other)
     m_WorldPosition = other.m_WorldPosition;
 
     m_ID = other.m_ID;
+
+    m_IsPointed = other.m_IsPointed;
 }
 
 Block::~Block()

@@ -12,7 +12,8 @@ Chunk::Chunk(vec3 position, Player* player, unsigned int offset)
 		{
 			for (int x = 0; x < CHUNK_SIZE; x++)
 			{
-				int air_blocks = (int)(CHUNK_HEIGHT / 3 * m_NoiseMap->GetGridValues()[z][x]);
+				//int air_blocks = (int)(CHUNK_HEIGHT / 3 * m_NoiseMap->GetGridValues()[z][x]);
+				int air_blocks = (int)(6 * m_NoiseMap->GetGridValues()[z][x]);
 				int col_height = CHUNK_HEIGHT - air_blocks;
 
 				if (x == 0 && z == 0)
@@ -230,15 +231,17 @@ Chunk& Chunk::operator= (Chunk& other)
 	return *this;
 }
 
-void Chunk::BuildMesh(terrain_buffers* terrainBufs)
+void Chunk::BuildMesh(terrain_buffers* terrainBufs, Block* blockPointed)
 {
 	unsigned int num_of_faces = m_Blocks.size() * FACES_PER_BLOCK;
 
 	offsets terrainOffsets;
 
+	// define offsets here in case chunks are rearranged
 	terrainOffsets.model = m_OffsetIntoBuffer * num_of_faces * 16 * sizeof(float);
 	terrainOffsets.tex = m_OffsetIntoBuffer * num_of_faces * 2 * sizeof(float) * INDICES_PER_FACE;
 	terrainOffsets.face_index = m_OffsetIntoBuffer * num_of_faces * sizeof(int);
+	terrainOffsets.pointedFlags = m_OffsetIntoBuffer * num_of_faces * sizeof(float);
 
 	m_Mesh->Clear();
 
@@ -252,10 +255,16 @@ void Chunk::BuildMesh(terrain_buffers* terrainBufs)
 
 		Camera* cam = m_Player->GetCam();
 		bool isBlockInsideFrustum = cam->IsInsideFrustum(block->GetWorldPosition());
-		//bool isBlockInsideFrustum = true;
 
 		if (block->GetID() != air && isBlockInsideFrustum)
+		{
+			if (block->GetWorldPosition() == blockPointed->GetWorldPosition())
+				block->m_IsPointed = true;
+
 			AddBlockToMesh(block);
+		}
+		
+		block->m_IsPointed = false; // reset m_IsPointed to false so it won't be highlighted when it's no longer pointed in the next mesh generations
 	}
 
 	// after the blocks are evaluated call mesh->Build which sends the data to the buffer object
@@ -264,8 +273,6 @@ void Chunk::BuildMesh(terrain_buffers* terrainBufs)
 
 void Chunk::AddBlockToMesh(Block* block)
 {
-	bool isAddedToMesh = false;
-
 	vec3 blp = block->GetLocalPosition();
 	Camera* cam = m_Player->GetCam();
 
@@ -282,7 +289,7 @@ void Chunk::AddBlockToMesh(Block* block)
 	for (int i = 0; i < FACES_PER_BLOCK; i++)
 	{
 		Chunk* adjChunk;
-		if (i < 2)
+		if (i < 2) // make sure the "sides" enum values are retrieved correctly
 			adjChunk = NULL;
 		else
 			adjChunk = m_Surrounding[i - 2];

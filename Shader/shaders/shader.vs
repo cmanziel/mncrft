@@ -21,14 +21,27 @@ layout(location = 14) in vec4 model_col2;
 layout(location = 15) in vec4 model_col3;
 
 layout(location = 16) in int side;
+layout(location = 17) in float pointedFlag;
+
+layout(location = 18) in vec3 bar_top;
+layout(location = 19) in vec3 bar_bottom;
+layout(location = 20) in vec3 bar_left;
+layout(location = 21) in vec3 bar_right;
+layout(location = 22) in vec3 bar_front;
+layout(location = 23) in vec3 bar_back;
 
 uniform mat4 view;
 uniform mat4 proj;
 
 out vec2 out_texCoords;
+out float out_isPointed;
+out vec3 out_barycentric;
+out float out_lightFactor;
 
 vec2 tex_coords[6] = vec2[6](tex_coords_v1, tex_coords_v2, tex_coords_v3, tex_coords_v4, tex_coords_v5, tex_coords_v6);
 vec3 vert_pos[6] = vec3[6](pos_top, pos_bottom, pos_left, pos_right, pos_front, pos_back);
+vec3 bar_coords[6] = vec3[6](bar_top, bar_bottom, bar_left, bar_right, bar_front, bar_back);
+float light_factors[6] = float[6](1.0, 1.0, 0.6, 1.0, 0.8, 0.8);
 
 void main() {
 	mat4 model = mat4(model_col0, model_col1, model_col2, model_col3);
@@ -39,4 +52,9 @@ void main() {
 
 	gl_Position = mvp * vec4(position, 1.0);
 	out_texCoords = tex_coords[gl_VertexID % 6];
+	out_isPointed = pointedFlag;
+
+	out_lightFactor = light_factors[side];
+
+	out_barycentric = bar_coords[side];
 }

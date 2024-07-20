@@ -4,7 +4,7 @@
 #include <iostream>
 
 Terrain::Terrain(Player* player)
-	: m_Player(player)
+	: m_Player(player), m_BlockPointed(NULL)
 {
 	m_CurrentChunk = 0;
 	m_TotalChunks = (CHUNK_RADIUS * 2 + 1) * (CHUNK_RADIUS * 2 + 1);
@@ -36,6 +36,7 @@ Terrain::Terrain(Player* player)
 	unsigned int modelBufSize = 16 * sizeof(float) * num_of_faces * m_TotalChunks;
 	unsigned int texCoordsBufSize = 2 * sizeof(float) * INDICES_PER_FACE * num_of_faces * m_TotalChunks;
 	unsigned int facesIndexBufSize = sizeof(int) * num_of_faces * m_TotalChunks;
+	unsigned int pointedFlagsSize = sizeof(float) * num_of_faces * m_TotalChunks;
 
 	m_Buffers = (terrain_buffers*)malloc(sizeof(terrain_buffers));
 
@@ -48,7 +49,9 @@ Terrain::Terrain(Player* player)
 	m_Buffers->model = new Buffer((float*)NULL, modelBufSize);
 	m_Buffers->tex = new Buffer((float*)NULL, texCoordsBufSize);
 	m_Buffers->face_index = new Buffer((float*)NULL, facesIndexBufSize);
+	m_Buffers->pointedFlags = new Buffer((float*)NULL, pointedFlagsSize);
 
+	BreakBlock();
 	// create the meshes
 	for (int z = 0; z < CHUNK_RADIUS * 2 + 1; z++)
 	{
@@ -72,6 +75,7 @@ Terrain::~Terrain()
 	delete m_Buffers->model;
 	delete m_Buffers->tex;
 	delete m_Buffers->face_index;
+	delete m_Buffers->pointedFlags;
 
 	free(m_Buffers);
 
@@ -93,8 +97,7 @@ Player* Terrain::GetPlayer()
 void Terrain::GenerateWorld()
 {
 	// do block breaking here before the meshes are generated
-	if (m_Player->GetState() == STATE_BREAK)
-		BreakBlock();
+	BreakBlock();
 
 	// Wrap chunk rearranging in a separate function
 	int chunkX = m_Player->GetChunkGridPosition().x;
@@ -134,7 +137,7 @@ void Terrain::GenerateMeshes(unsigned int currentChunk)
 
 	SetChunkSurroundings(chunk, gridIndex);
 
-	chunk->BuildMesh(m_Buffers);
+	chunk->BuildMesh(m_Buffers, m_BlockPointed);
 }
 
 void Terrain::SetChunkSurroundings(Chunk* chunk, vec3 gridIndex)
@@ -295,8 +298,6 @@ void Terrain::BreakBlock()
 
 	for (float t = 0.0; t < m_Player->m_BreakMaxDistance; t += 0.2)
 	{
-		//point p = m_Player->m_Ray.at(t);
-
 		point p = ray.at(t);
 
 		int pointXFromPlayer = floor(p.x / CHUNK_SIZE) - playerGridX; // if = 0 the point is still in the same chunk
@@ -323,8 +324,15 @@ void Terrain::BreakBlock()
 		if (blockToBreak == NULL)
 			return;
 
+		m_BlockPointed = blockToBreak;
+
 		if (blockToBreak->GetID() != air)
 		{
+			//blockToBreak->m_IsPointed = true;
+
+			if (m_Player->GetState() != STATE_BREAK)
+				return;
+
 			blockToBreak->SetID(air);
 
 			if (blockToBreak->GetLocalPosition().y == chunk->m_LowestSolidHeight && chunk->m_LowestSolidHeight - 1 > 0)

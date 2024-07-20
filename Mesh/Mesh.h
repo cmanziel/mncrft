@@ -16,6 +16,7 @@ typedef struct {
 	Buffer* model;
 	Buffer* tex;
 	Buffer* face_index;
+	Buffer* pointedFlags;
 } terrain_buffers;
 
 // value for the offsets of the mesh data into the opengl buffers
@@ -23,6 +24,7 @@ typedef struct {
 	unsigned int model;
 	unsigned int tex;
 	unsigned int face_index;
+	unsigned int pointedFlags;
 } offsets;
 
 class Mesh
@@ -49,6 +51,7 @@ private:
 	std::vector<float> m_TexCoords;
 	std::vector<int> m_Faces; // vector of enum sides values (see mesh.h) then interpreted correctly with glVertexAttriPointer in renderer->Draw()
 	std::vector<float> m_ModelMats;
+	std::vector<float> m_PointedFlags; // vector for the values of m_IsPointed flag of the blocks added to the mesh
 
 	terrain_buffers* m_TerrainBuffers; // all meshes point to this struct, every mesh instance has a different offset in the buffer dataset
 	//offsets* m_TerrainOffsets;

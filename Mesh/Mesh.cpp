@@ -19,10 +19,7 @@ Mesh::Mesh()
 
 Mesh::~Mesh()
 {
-	//free(m_TerrainOffsets);
-	m_TexCoords.clear();
-	m_Faces.clear();
-	m_ModelMats.clear();
+	Clear();
 }
 
 std::vector<int> Mesh::GetFacesIndex()
@@ -50,6 +47,7 @@ void Mesh::Clear()
 	m_ModelMats.clear();
 	m_TexCoords.clear();
 	m_Faces.clear();
+	m_PointedFlags.clear();
 }
 
 void Mesh::Build(terrain_buffers* terrainBufs, offsets terrainBuffersOffsets)
@@ -62,6 +60,7 @@ void Mesh::Build(terrain_buffers* terrainBufs, offsets terrainBuffersOffsets)
 	m_TerrainBuffers->model->SubData(m_ModelMats.data(), m_ModelMats.size() * sizeof(float), m_TerrainOffsets.model);
 	m_TerrainBuffers->tex->SubData(m_TexCoords.data(), m_TexCoords.size() * sizeof(float), m_TerrainOffsets.tex);
 	m_TerrainBuffers->face_index->SubData_int(m_Faces.data(), m_Faces.size() * sizeof(int), m_TerrainOffsets.face_index);
+	m_TerrainBuffers->pointedFlags->SubData(m_PointedFlags.data(), m_PointedFlags.size() * sizeof(float), m_TerrainOffsets.pointedFlags);
 }
 
 // add to the mesh the faces checked by the Chunk's class methods
@@ -80,6 +79,11 @@ void Mesh::AddFace(Block* block, Camera* cam, uint8_t side)
 	m_Faces.push_back(side);
 	m_ModelMats.insert(m_ModelMats.end(), model_arr, model_arr + 16);
 	m_TexCoords.insert(m_TexCoords.end(), texCoords, texCoords + std::size(texCoords));
+
+	if (block->m_IsPointed)
+		m_PointedFlags.push_back(1.0);
+	else
+		m_PointedFlags.push_back(0.0);
 }
 
 Mesh& Mesh::operator= (Mesh& other)
@@ -111,8 +115,12 @@ void insertFaceTexCoords(float* coords, unsigned int blockID, int side)
 		bool fillVertsClockwise = false;
 
 		if (blockID == grass)
-			if (side == top || side == bottom)
+		{
+			if (side == top)
 				texIndexOffset = 1;
+			else if (side == bottom)
+				blockID = dirt; // apply a dirt texture to the bottom face of a grass block
+		}
 
 		if (side == back || side == bottom || side == left)
 			fillVertsClockwise = true;

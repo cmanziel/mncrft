@@ -15,7 +15,7 @@ typedef struct
 class Window
 {
 public:
-	Window(Input* inputHandler);
+	Window(Input* inputHandler, unsigned int width, unsigned int height);
 
     void key_callback(int key, int scancode, int actions, int mods)
     {
@@ -30,6 +30,8 @@ public:
 
 private:
 	GLFWwindow* m_Window;
+    unsigned int m_Width;
+    unsigned int m_Height;
     Input* m_InputHandler;
     float m_AspectRatio;
     cursor m_CursorPos;

@@ -5,19 +5,13 @@
         - loop thorugh the meshes starting from the ones closer to the player so they're the first ones to be generated
 
     2. block breaking:
-        - camera direction and movement based on cursor movement
+        - highlight the borders of the block pointed by the camera's ray, use barycentric coordinates for it
         - better solution for breaking blocks at a chunk edge, for now every time a block is being broken the lowest solid height out of the chunk and its surroundings is evaluated then set as their lowest solid height
-
-    3. add ligthing to the scene, initially use the jdh method, give east and west faces of a block different lighting simulating light coming from a certain direction
 */
 
 /* TODO:
     * learn about the random seed for world generation
     * RANDOM WALK technique for generating mountains and caves?
-*/
-
-/* DONE:
-    * locked the game to 60fps and generate one mesh per frame 
 */
 
 #define _CRTDBG_MAP_ALLOC
@@ -52,7 +46,7 @@ int main()
 
     Player* player = DBG_NEW Player();
     Input inputHandler = Input(player);
-    Window* window = DBG_NEW Window(&inputHandler);
+    Window* window = DBG_NEW Window(&inputHandler, 1280, 960);
 
     GLFWwindow* GLFWwin = window->GetGLFWWindow();
 
