@@ -77,7 +77,7 @@ int main()
 
         //printf("frame rate: %f\n", 1.0 / (currentFrame - lastFrame));
 
-        lastFrame = currentFrame;
+        //lastFrame = currentFrame;
 
         //if (deltaTime < timeForFrameRate)
         //    continue;

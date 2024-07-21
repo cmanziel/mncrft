@@ -27,7 +27,7 @@ public:
 	void GenerateMap();
 	float** GetGridValues();
 
-	static float GetValue(float x, float y);
+	static float GetValue(float x, float y, float frequency);
 
 	~NoiseMap();
 

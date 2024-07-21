@@ -23,7 +23,7 @@ Terrain::Terrain(Player* player)
 			vec3 pos = vec3(startX + x, 0, startZ + z);
 
 			//unsigned int solid_height = m_NoiseMap->GetGridValues()[z][x] * CHUNK_HEIGHT;
-			unsigned int solid_height = CHUNK_HEIGHT * m_NoiseMap->GetValue(x, z);
+			unsigned int solid_height = CHUNK_HEIGHT * m_NoiseMap->GetValue(x, z, 1.0f);
 
 			Chunk* chunk = new Chunk(pos, m_Player, chunk_offset, solid_height);
 
