@@ -32,7 +32,7 @@ enum surr_chunks {
 class Chunk
 {
 public:
-	Chunk(vec3 position, Player* player, unsigned int offsetIntoBuffer);
+	Chunk(vec3 position, Player* player, unsigned int offsetIntoBuffer, unsigned int solidHeight);
 	Chunk(Chunk& other);
 	Chunk& operator= (Chunk& other);
 	~Chunk();
@@ -41,8 +41,6 @@ public:
 	vec3 GetPosition();
 
 	Player* GetPlayer();
-
-	NoiseMap* GetNoiseMap();
 
 	void BuildMesh(terrain_buffers* terrainBufs, Block* blockPointed);
 	Mesh* GetMesh();
@@ -64,7 +62,6 @@ public:
 	Block* m_BlockPointed;
 private:
 	vec3 m_Position;
-	NoiseMap* m_NoiseMap;
 	Player* m_Player;
 	Chunk* m_Surrounding[4]; // array of chunks
 	std::vector<Block*> m_Blocks;

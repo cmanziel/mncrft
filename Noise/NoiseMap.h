@@ -27,11 +27,13 @@ public:
 	void GenerateMap();
 	float** GetGridValues();
 
+	static float GetValue(float x, float y);
+
 	~NoiseMap();
 
 private:
 	float** m_GridValues;
-	int m_ChunkSize;
+	int m_Size;
 };
 
 //every chunk has a noisemap field

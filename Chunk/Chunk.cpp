@@ -1,27 +1,24 @@
 #include "Chunk.h"
 
-Chunk::Chunk(vec3 position, Player* player, unsigned int offset)
-	: m_Position(position), m_OffsetIntoBuffer(offset), m_Player(player)
+Chunk::Chunk(vec3 position, Player* player, unsigned int offset, unsigned int solidHeight)
+	: m_Position(position), m_OffsetIntoBuffer(offset), m_Player(player), m_LowestSolidHeight(solidHeight)
 {
-	m_LowestSolidHeight = 0;
-	m_NoiseMap = new NoiseMap(CHUNK_SIZE);
-
 	for (int y = 0; y < CHUNK_HEIGHT; y++)
 	{
 		for (int z = 0; z < CHUNK_SIZE; z++)
 		{
 			for (int x = 0; x < CHUNK_SIZE; x++)
 			{
-				//int air_blocks = (int)(CHUNK_HEIGHT / 3 * m_NoiseMap->GetGridValues()[z][x]);
-				int air_blocks = (int)(6 * m_NoiseMap->GetGridValues()[z][x]);
-				int col_height = CHUNK_HEIGHT - air_blocks;
-
-				if (x == 0 && z == 0)
-					m_LowestSolidHeight = col_height;
-				else if (col_height < m_LowestSolidHeight)
-					m_LowestSolidHeight = col_height;
-
 				short ID;
+
+				vec3 blockWorldPos = vec3(m_Position.x * CHUNK_SIZE + x, y, m_Position.z * CHUNK_SIZE + z);
+
+				// use the world position's x and z coordinates otherwise values would repeat themselves on a per-chunk basis
+				//unsigned int col_height = NoiseMap::GetValue(x, z) * CHUNK_HEIGHT; wrong
+				unsigned int col_height = NoiseMap::GetValue(blockWorldPos.x, blockWorldPos.z) * CHUNK_HEIGHT;
+
+				if (col_height < m_LowestSolidHeight)
+					m_LowestSolidHeight = col_height;
 
 				if (y >= col_height)
 					ID = air;
@@ -31,8 +28,6 @@ Chunk::Chunk(vec3 position, Player* player, unsigned int offset)
 					ID = cobblestone;
 				else
 					ID = dirt;
-
-				vec3 blockWorldPos = vec3(m_Position.x * CHUNK_SIZE + x, y, m_Position.z * CHUNK_SIZE + z);
 
 				Block* block = new Block(vec3(x, y, z), blockWorldPos, ID); // give the block a position based on the chunk position and its position in the chunk
 
@@ -48,8 +43,6 @@ Chunk::Chunk(vec3 position, Player* player, unsigned int offset)
 Chunk::Chunk(Chunk& other)
 {
 	m_Position = other.m_Position;
-
-	m_NoiseMap = new NoiseMap(*other.m_NoiseMap);
 
 	m_OffsetIntoBuffer = other.m_OffsetIntoBuffer;
 
@@ -138,11 +131,6 @@ Chunk** Chunk::GetSurrounding() {
 	return m_Surrounding;
 }
 
-NoiseMap* Chunk::GetNoiseMap()
-{
-	return m_NoiseMap;
-}
-
 Player* Chunk::GetPlayer()
 {
 	return m_Player;
@@ -175,7 +163,6 @@ unsigned int Chunk::GetLowestSolidHeight()
 
 Chunk::~Chunk() {
 	delete m_Mesh;
-	delete m_NoiseMap;
 	//delete m_Surrounding;
 
 	// free the memory of m_Surrounding field
@@ -201,8 +188,6 @@ Chunk& Chunk::operator= (Chunk& other)
 	m_Position = other.m_Position;
 
 	m_OffsetIntoBuffer = other.m_OffsetIntoBuffer;
-
-	*m_NoiseMap = *other.m_NoiseMap;
 
 	// for m_Surrounding assign just the pointers
 	/*m_Surrounding = other.m_Surrounding;*/

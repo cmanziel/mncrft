@@ -8,6 +8,7 @@ Terrain::Terrain(Player* player)
 {
 	m_CurrentChunk = 0;
 	m_TotalChunks = (CHUNK_RADIUS * 2 + 1) * (CHUNK_RADIUS * 2 + 1);
+	m_NoiseMap = new NoiseMap(CHUNK_RADIUS * 2 + 1);
 
 	int chunkX = m_Player->GetChunkGridPosition().x;
 	int chunkZ = m_Player->GetChunkGridPosition().z;
@@ -21,7 +22,10 @@ Terrain::Terrain(Player* player)
 		{
 			vec3 pos = vec3(startX + x, 0, startZ + z);
 
-			Chunk* chunk = new Chunk(pos, m_Player, chunk_offset);
+			//unsigned int solid_height = m_NoiseMap->GetGridValues()[z][x] * CHUNK_HEIGHT;
+			unsigned int solid_height = CHUNK_HEIGHT * m_NoiseMap->GetValue(x, z);
+
+			Chunk* chunk = new Chunk(pos, m_Player, chunk_offset, solid_height);
 
 			m_Chunks[z][x] = chunk;
 
@@ -76,6 +80,8 @@ Terrain::~Terrain()
 	delete m_Buffers->tex;
 	delete m_Buffers->face_index;
 	delete m_Buffers->pointedFlags;
+
+	delete m_NoiseMap;
 
 	free(m_Buffers);
 
@@ -210,12 +216,13 @@ void Terrain::RearrangeChunks()
 		for (int z = 0; z < CHUNK_RADIUS * 2 + 1; z++)
 		{
 			// allocate new Chunk with correct position, and assign to it the to-be-replaced chunk's offset into the terrain buffers
+			Chunk* toReplace = m_Chunks[z][columnX];
 			vec3 newPos = vec3(chunkX + offset.x, 0, chunkZ - CHUNK_RADIUS + z);
-			Chunk* newChunk = new Chunk(newPos, m_Player, m_Chunks[z][columnX]->GetOffsetIntoBuffer());
+			Chunk* newChunk = new Chunk(newPos, m_Player, toReplace->GetOffsetIntoBuffer(), toReplace->m_LowestSolidHeight);
 
 			newColumn[z] = newChunk;
 
-			delete m_Chunks[z][columnX];
+			delete toReplace;
 
 			m_Chunks[z][columnX] = newChunk;
 		}
@@ -250,12 +257,13 @@ void Terrain::RearrangeChunks()
 		std::vector<Chunk*> newRow(CHUNK_RADIUS * 2 + 1);
 		for (int x = 0; x < CHUNK_RADIUS * 2 + 1; x++)
 		{
+			Chunk* toReplace = m_Chunks[rowZ][x];
 			vec3 newPos = vec3(chunkX - CHUNK_RADIUS + x, 0, chunkZ + offset.z);
-			Chunk* newChunk = new Chunk(newPos, m_Player, m_Chunks[rowZ][x]->GetOffsetIntoBuffer());
+			Chunk* newChunk = new Chunk(newPos, m_Player, toReplace->GetOffsetIntoBuffer(), toReplace->m_LowestSolidHeight);
 
 			newRow[x] = newChunk;
 
-			delete m_Chunks[rowZ][x];
+			delete toReplace;
 
 			m_Chunks[rowZ][x] = newChunk;
 		}
