@@ -15,7 +15,17 @@ Chunk::Chunk(vec3 position, Player* player, unsigned int offset, unsigned int so
 
 				// use the world position's x and z coordinates otherwise values would repeat themselves on a per-chunk basis
 				//unsigned int col_height = NoiseMap::GetValue(x, z) * CHUNK_HEIGHT; wrong
-				unsigned int col_height = NoiseMap::GetValue(blockWorldPos.x, blockWorldPos.z) * CHUNK_HEIGHT;
+				float coefficients_sum = 1.0f + 0.5f + 0.25f;
+
+				float nv = (NoiseMap::GetValue(blockWorldPos.x, blockWorldPos.z, 0.05f)
+					+ 0.5f * NoiseMap::GetValue(blockWorldPos.x, blockWorldPos.z, 0.1f)
+					+ 0.25 * NoiseMap::GetValue(blockWorldPos.x, blockWorldPos.z, 0.2f))
+					/ coefficients_sum;
+
+				unsigned int col_height = pow(nv, 2.0f) * CHUNK_HEIGHT;
+
+				col_height == 0 ? col_height = 1 : col_height;
+				//unsigned int col_height = nv * CHUNK_HEIGHT;
 
 				if (col_height < m_LowestSolidHeight)
 					m_LowestSolidHeight = col_height;
@@ -24,7 +34,7 @@ Chunk::Chunk(vec3 position, Player* player, unsigned int offset, unsigned int so
 					ID = air;
 				else if (y == col_height - 1)
 					ID = grass;
-				else if (y < CHUNK_HEIGHT / 2)
+				else if (y < CHUNK_HEIGHT / 4)
 					ID = cobblestone;
 				else
 					ID = dirt;

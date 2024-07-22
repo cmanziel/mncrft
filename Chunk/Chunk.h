@@ -17,7 +17,7 @@
 #include "../Player/Player.h"
 
 #define CHUNK_SIZE 16
-#define CHUNK_HEIGHT 20
+#define CHUNK_HEIGHT 50
 
 // these indexes should map the block "sides" enum indexes so that the function AddBlockToMesh functions properly when looping through a block's faces
 enum surr_chunks {

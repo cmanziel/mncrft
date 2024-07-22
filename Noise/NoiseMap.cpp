@@ -71,9 +71,9 @@ float** NoiseMap::GetGridValues()
 	return m_GridValues;
 }
 
-float NoiseMap::GetValue(float x, float y)
+float NoiseMap::GetValue(float x, float y, float frequency)
 {
-	return perlin((x + 0.5f) / 10, (y + 0.5f) / 10);
+	return perlin((x + 0.5f) * frequency, (y + 0.5f) * frequency);
 }
 
 NoiseMap& NoiseMap::operator= (NoiseMap& other)
