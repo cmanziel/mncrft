@@ -2,6 +2,7 @@
 
 #include "../Buffer/Buffer.h"
 #include "../utils/glm_types.h"
+#include "../Terrain/Biomes/Biome.h"
 
 #define VALUES_PER_FACE 18
 #define INDICES_PER_FACE 6
@@ -12,10 +13,6 @@
 
 enum sides {
 	top, bottom, left, right, front, back
-};
-
-enum BlockID {
-	air = -1, grass, dirt = 2, cobblestone
 };
 
 class Block

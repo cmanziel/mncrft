@@ -67,4 +67,5 @@ private:
 	std::vector<Block*> m_Blocks;
 	Mesh* m_Mesh;
 	unsigned int m_OffsetIntoBuffer;
+	Biome* m_Biome;
 };

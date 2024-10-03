@@ -31,6 +31,7 @@ public:
 
 	~NoiseMap();
 
+	static float m_BaseFrequency;
 private:
 	float** m_GridValues;
 	int m_Size;

@@ -3,6 +3,9 @@
 Chunk::Chunk(vec3 position, Player* player, unsigned int offset, unsigned int solidHeight)
 	: m_Position(position), m_OffsetIntoBuffer(offset), m_Player(player), m_LowestSolidHeight(solidHeight)
 {
+	m_Biome = new Biome(position);
+	m_LowestSolidHeight = 0;
+
 	for (int y = 0; y < CHUNK_HEIGHT; y++)
 	{
 		for (int z = 0; z < CHUNK_SIZE; z++)
@@ -13,31 +16,21 @@ Chunk::Chunk(vec3 position, Player* player, unsigned int offset, unsigned int so
 
 				vec3 blockWorldPos = vec3(m_Position.x * CHUNK_SIZE + x, y, m_Position.z * CHUNK_SIZE + z);
 
-				// use the world position's x and z coordinates otherwise values would repeat themselves on a per-chunk basis
-				//unsigned int col_height = NoiseMap::GetValue(x, z) * CHUNK_HEIGHT; wrong
-				float coefficients_sum = 1.0f + 0.5f + 0.25f;
+				float nv = m_Biome->GetBiomeNoise(blockWorldPos);
+				//float nv = Forest::GetBiomeNoise(blockWorldPos);
 
-				float nv = (NoiseMap::GetValue(blockWorldPos.x, blockWorldPos.z, 0.05f)
-					+ 0.5f * NoiseMap::GetValue(blockWorldPos.x, blockWorldPos.z, 0.1f)
-					+ 0.25 * NoiseMap::GetValue(blockWorldPos.x, blockWorldPos.z, 0.2f))
-					/ coefficients_sum;
-
-				unsigned int col_height = pow(nv, 2.0f) * CHUNK_HEIGHT;
+				unsigned int col_height = nv * CHUNK_HEIGHT;
 
 				col_height == 0 ? col_height = 1 : col_height;
 				//unsigned int col_height = nv * CHUNK_HEIGHT;
 
-				if (col_height < m_LowestSolidHeight)
+				if (x == 0 && z == 0)
+					m_LowestSolidHeight = col_height;
+				else if (col_height < m_LowestSolidHeight)
 					m_LowestSolidHeight = col_height;
 
-				if (y >= col_height)
-					ID = air;
-				else if (y == col_height - 1)
-					ID = grass;
-				else if (y < CHUNK_HEIGHT / 4)
-					ID = cobblestone;
-				else
-					ID = dirt;
+				ID = m_Biome->AssignBlockID(blockWorldPos, col_height, CHUNK_HEIGHT);
+				//ID = Forest::AssignBlockID(blockWorldPos, col_height, CHUNK_HEIGHT);
 
 				Block* block = new Block(vec3(x, y, z), blockWorldPos, ID); // give the block a position based on the chunk position and its position in the chunk
 
@@ -83,6 +76,27 @@ Chunk::Chunk(Chunk& other)
 	}
 
 	//m_Mesh = new Mesh(&other);
+}
+
+Chunk::~Chunk() {
+	delete m_Mesh;
+	//delete m_Surrounding;
+
+	// free the memory of m_Surrounding field
+	// 4 because there are 4 directions for surrounding chunks: left, right, back, front
+	//for (int i = 0; i < 4; i++)
+	//{
+	//	free(m_Surrounding[i]);
+	//}
+
+	//free(m_Surrounding);
+
+	delete m_Biome;
+
+	for (Block* b : m_Blocks)
+		delete b;
+
+	m_Blocks.clear();
 }
 
 // block local position is passed to the function
@@ -169,25 +183,6 @@ unsigned int Chunk::GetOffsetIntoBuffer()
 unsigned int Chunk::GetLowestSolidHeight()
 {
 	return m_LowestSolidHeight;
-}
-
-Chunk::~Chunk() {
-	delete m_Mesh;
-	//delete m_Surrounding;
-
-	// free the memory of m_Surrounding field
-	// 4 because there are 4 directions for surrounding chunks: left, right, back, front
-	//for (int i = 0; i < 4; i++)
-	//{
-	//	free(m_Surrounding[i]);
-	//}
-
-	//free(m_Surrounding);
-
-	for (Block* b : m_Blocks)
-		delete b;
-
-	m_Blocks.clear();
 }
 
 Chunk& Chunk::operator= (Chunk& other)
