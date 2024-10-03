@@ -2,62 +2,62 @@
 
 float backFace[] =
 {
-	0.0, 1.0, 0.0,
-	1.0, 0.0, 0.0,
-	0.0, 0.0, 0.0,
-	0.0, 1.0, 0.0,
-	1.0, 1.0, 0.0,
-	1.0, 0.0, 0.0
+	0.0, 1.0, 0.0, 1.0, 0.0, 0.0,
+	1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
+	0.0, 0.0, 0.0, 0.0, 1.0, 0.0,
+	0.0, 1.0, 0.0, 1.0, 0.0, 0.0,
+	1.0, 1.0, 0.0, 0.0, 1.0, 0.0,
+	1.0, 0.0, 0.0, 0.0, 0.0, 1.0
 };
 
 float frontFace[] =
 {
-	0.0, 1.0, 1.0,
-	0.0, 0.0, 1.0,
-	1.0, 0.0, 1.0,
-	0.0, 1.0, 1.0,
-	1.0, 0.0, 1.0,
-	1.0, 1.0, 1.0
+	0.0, 1.0, 1.0, 1.0, 0.0, 0.0,
+	0.0, 0.0, 1.0, 0.0, 1.0, 0.0,
+	1.0, 0.0, 1.0, 0.0, 0.0, 1.0,
+	0.0, 1.0, 1.0, 1.0, 0.0, 0.0,
+	1.0, 0.0, 1.0, 0.0, 0.0, 1.0,
+	1.0, 1.0, 1.0, 0.0, 1.0, 0.0
 };
 
 float leftFace[] =
 {
-	0.0, 1.0, 1.0,
-	0.0, 0.0, 0.0,
-	0.0, 0.0, 1.0,
-	0.0, 1.0, 1.0,
-	0.0, 1.0, 0.0,
-	0.0, 0.0, 0.0
+	0.0, 1.0, 1.0, 1.0, 0.0, 0.0,
+	0.0, 0.0, 0.0, 0.0, 0.0, 1.0,
+	0.0, 0.0, 1.0, 0.0, 1.0, 0.0,
+	0.0, 1.0, 1.0, 1.0, 0.0, 0.0,
+	0.0, 1.0, 0.0, 0.0, 1.0, 0.0,
+	0.0, 0.0, 0.0, 0.0, 0.0, 1.0
 };
 
 float rightFace[] =
 {
-	1.0, 1.0, 1.0,
-	1.0, 0.0, 1.0,
-	1.0, 0.0, 0.0,
-	1.0, 1.0, 1.0,
-	1.0, 0.0, 0.0,
-	1.0, 1.0, 0.0
+	1.0, 1.0, 1.0, 1.0, 0.0, 0.0,
+	1.0, 0.0, 1.0, 0.0, 1.0, 0.0,
+	1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
+	1.0, 1.0, 1.0, 1.0, 0.0, 0.0,
+	1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
+	1.0, 1.0, 0.0, 0.0, 1.0, 0.0
 };
 
 float topFace[] =
 {
-	0.0, 1.0, 0.0,
-	0.0, 1.0, 1.0,
-	1.0, 1.0, 1.0,
-	0.0, 1.0, 0.0,
-	1.0, 1.0, 1.0,
-	1.0, 1.0, 0.0
+	0.0, 1.0, 0.0, 1.0, 0.0, 0.0,
+	0.0, 1.0, 1.0, 0.0, 1.0, 0.0,
+	1.0, 1.0, 1.0, 0.0, 0.0, 1.0,
+	0.0, 1.0, 0.0, 1.0, 0.0, 0.0,
+	1.0, 1.0, 1.0, 0.0, 0.0, 1.0,
+	1.0, 1.0, 0.0, 0.0, 1.0, 0.0
 };
 
 float bottomFace[] =
 {
-	0.0, 0.0, 0.0,
-	1.0, 0.0, 1.0,
-	0.0, 0.0, 1.0,
-	0.0, 0.0, 0.0,
-	1.0, 0.0, 0.0,
-	1.0, 0.0, 1.0
+	0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
+	1.0, 0.0, 1.0, 0.0, 0.0, 1.0,
+	0.0, 0.0, 1.0, 0.0, 1.0, 0.0,
+	0.0, 0.0, 0.0, 1.0, 0.0, 0.0,
+	1.0, 0.0, 0.0, 0.0, 1.0, 0.0,
+	1.0, 0.0, 1.0, 0.0, 0.0, 1.0
 };
 
 // array of six float pointers, one for each face
@@ -71,10 +71,14 @@ Renderer::Renderer()
 		m_FaceBuffers[i] = new Buffer(faces[i], INDICES_PER_FACE * VALUES_PER_VERTEX * sizeof(float));
 
 		glEnableVertexAttribArray(i);
-		glVertexAttribPointer(i, VALUES_PER_VERTEX, GL_FLOAT, GL_FALSE, VALUES_PER_VERTEX * sizeof(float), (void*)0);
+		glVertexAttribPointer(i, VALUES_PER_COORD, GL_FLOAT, GL_FALSE, VALUES_PER_VERTEX * sizeof(float), (void*)0);
+
+		int barycentric_location = 18;
+		glEnableVertexAttribArray(barycentric_location + i);
+		glVertexAttribPointer(barycentric_location + i, VALUES_PER_COORD, GL_FLOAT, GL_FALSE, VALUES_PER_VERTEX * sizeof(float), (void*)(VALUES_PER_COORD * sizeof(float)));
 	}
 
-	m_Shader = new Shader("shaders/shader.vs", "shaders/shader.fs");
+	m_Shader = new Shader("Shader/shaders/shader.vs", "Shader/shaders/shader.fs");
 	m_Shader->CreateProgram();
 }
 
@@ -137,6 +141,13 @@ void Renderer::Draw(Terrain* terrain)
 			//glVertexAttribPointer(model_attrib_index, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(float), (void*)(buffers_offsets->model + 12 * sizeof(float)));
 			glVertexAttribPointer(model_attrib_index, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(float), (void*)(buffer_offsets.model + 12 * sizeof(float)));
 			glVertexAttribDivisor(model_attrib_index, 1);
+
+			terrain_bufs->pointedFlags->Bind();
+
+			int pf_attrib_index = 17;
+			glEnableVertexAttribArray(pf_attrib_index);
+			glVertexAttribPointer(pf_attrib_index, 1, GL_FLOAT, GL_FALSE, sizeof(float), (void*)buffer_offsets.pointedFlags);
+			glVertexAttribDivisor(pf_attrib_index, 1);
 
 			m_Shader->use();
 			glUniform1i(glGetUniformLocation(m_Shader->get_id(), "tex"), 0);

@@ -12,19 +12,17 @@
 #define DBG_NEW new
 #endif
 
-#include "../Block.h"
 #include "../Noise/NoiseMap.h"
-#include "../Mesh.h"
+#include "../Mesh/Mesh.h"
+#include "../Player/Player.h"
 
 #define CHUNK_SIZE 16
-#define CHUNK_HEIGHT 20
+#define CHUNK_HEIGHT 50
 
+// these indexes should map the block "sides" enum indexes so that the function AddBlockToMesh functions properly when looping through a block's faces
 enum surr_chunks {
-	left_chunk, right_chunk, back_chunk, front_chunk
+	left_chunk, right_chunk, front_chunk, back_chunk
 };
-
-class Mesh; // forward declaration
-class Player;
 
 /*
 	* chunk class needs m_Blocks field because every chunk hass a different structure initially and also it can be modified
@@ -34,20 +32,21 @@ class Player;
 class Chunk
 {
 public:
-	Chunk(vec3 position, Player* player, unsigned int offsetIntoBuffer);
-	Chunk(Chunk& other, Player* player);
-
+	Chunk(vec3 position, Player* player, unsigned int offsetIntoBuffer, unsigned int solidHeight);
+	Chunk(Chunk& other);
 	Chunk& operator= (Chunk& other);
-
 	~Chunk();
 	
 	Block* GetBlock(vec3 position);
 	vec3 GetPosition();
 
 	Player* GetPlayer();
-	NoiseMap* GetNoiseMap();
 
+	void BuildMesh(terrain_buffers* terrainBufs, Block* blockPointed);
 	Mesh* GetMesh();
+	void AddBlockToMesh(Block* block);
+	bool IsAdjacentBlockSolid(Block* block, vec3 adjBlockPos, Chunk* adjChunk);
+
 	std::vector<Block*> GetBlocksVector();
 
 	unsigned int GetOffsetIntoBuffer();
@@ -55,18 +54,17 @@ public:
 
 	//surr_chunks* m_Surrounding;
 	//surr_chunks* GetSurrounding();
-	void SetPosition(vec3 pos);
 	void SetSurroundings(Chunk** surr);
 
 	Chunk** GetSurrounding();
 
+	unsigned int m_LowestSolidHeight;
+	Block* m_BlockPointed;
 private:
 	vec3 m_Position;
-	NoiseMap* m_NoiseMap;
+	Player* m_Player;
 	Chunk* m_Surrounding[4]; // array of chunks
 	std::vector<Block*> m_Blocks;
 	Mesh* m_Mesh;
-	Player* m_Player;
 	unsigned int m_OffsetIntoBuffer;
-	unsigned int m_LowestSolidHeight;
 };

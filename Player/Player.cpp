@@ -1,28 +1,27 @@
 #include "Player.h"
 
+// avoid circular dependency between player and chunk classes by passing chunk parameters to player
+
 Player::Player()
 {
-	Camera* cam = new Camera();
+	m_WorldPosition = vec3(0.0, 17.0, 0.0);
+	m_BreakMaxDistance = 5.0;
+	m_State = STATE_WATCH;
+
+	Camera * cam = new Camera(m_WorldPosition);
+	m_Ray = Ray(m_WorldPosition, cam->GetCameraFront());
 
 	m_PlayerCam = cam;
 
-	// CHUNK_RADIUS DEFINED IN Player.h
-	// render CHUNK_RADIUS number of chunks in the positive and negative x and z directions around the player
-	m_ChunkRadius = CHUNK_RADIUS;
+	m_ChunkGridPosition = vec3(0, 0, 0);
 
-	vec3 playerPos = m_PlayerCam->GetPosition();
-
-	vec3 chunkPlayerIsIn = vec3((int)(playerPos.x / CHUNK_SIZE), 0, (int)(playerPos.z / CHUNK_SIZE));
-
-	m_ChunkGridPosition = chunkPlayerIsIn;
-
-	// when player gets created last Position is the player's position
 	m_LastGridPosition = m_ChunkGridPosition;
 }
 
-int Player::GetChunkRadius()
+Player::~Player()
 {
-	return m_ChunkRadius;
+	delete m_PlayerCam;
+	//delete m_Ray;
 }
 
 Camera* Player::GetCam()
@@ -30,19 +29,27 @@ Camera* Player::GetCam()
 	return m_PlayerCam;
 }
 
-void Player::UpdateChunkGridPosition()
+vec3 Player::GetWorldPosition()
 {
-	vec3 playerPos = m_PlayerCam->GetPosition();
+	return m_WorldPosition;
+}
 
-	// need to floor the x and z coordinate floating point value
-	// otherwise for the coordinates less than zero the number gets truncated to the greater integer and the change between chunks in the grid is not detected
+uint8_t Player::GetState()
+{
+	return m_State;
+}
 
-	int xGridCoord = floor(playerPos.x / CHUNK_SIZE);
-	int zGridCoord = floor(playerPos.z / CHUNK_SIZE);
+void Player::ChangeState(uint8_t state)
+{
+	m_State = state;
+}
 
-	vec3 chunkPlayerIsIn = vec3(xGridCoord, 0, zGridCoord);
+void Player::UpdateChunkGridPosition(vec3 chunkGridPosition)
+{
+	// update also position based on the camera's in order to get the Ray right
+	m_WorldPosition = m_PlayerCam->GetPosition();
 
-	m_ChunkGridPosition = chunkPlayerIsIn;
+	m_ChunkGridPosition = chunkGridPosition;
 }
 
 vec3 Player::GetChunkGridPosition()
@@ -58,9 +65,4 @@ vec3 Player::GetLastChunkGridPosition()
 void Player::SetLastChunkGridPosition()
 {
 	m_LastGridPosition = m_ChunkGridPosition;
-}
-
-Player::~Player()
-{
-	delete m_PlayerCam;
 }

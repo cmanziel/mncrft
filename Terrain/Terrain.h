@@ -13,7 +13,7 @@
 #endif
 
 #include <vector>
-#include "Player/Player.h"
+#include "../Chunk/Chunk.h"
 
 #define X_CHUNKS 4
 #define Y_CHUNKS 1
@@ -25,9 +25,15 @@ public:
 	Terrain(Player* player);
 	~Terrain();
 
-	void GenerateWorld(Player* player);
-  
+	Player* GetPlayer();
+
+	void GenerateWorld();
 	void GenerateMeshes(unsigned int chunkNum);
+	void RearrangeChunks();
+
+	void BreakBlock();
+
+	void UpdatePlayerChunkGridPosition();
 
 	//gridIndex: vec3 which x and z coords are the indexes for the bidimensional array in memory m_Chunks
 	void SetChunkSurroundings(Chunk* chunk, vec3 gridIndex);
@@ -37,10 +43,9 @@ public:
 	// index that keeps track of the chunk whose mesh needs to be generated in the current frame.
 	unsigned int m_CurrentChunk; // [0, m_Chunks.size() - 1]
 	unsigned int m_TotalChunks; // total number of chunks
-
-	// index that keeps track of the chunk whose mesh needs to be generated in the current frame.
-	unsigned int m_CurrentChunk; // [0, m_Chunks.size() - 1]
-
+	Block* m_BlockPointed;
 private:
 	terrain_buffers* m_Buffers;
+	Player* m_Player;
+	NoiseMap* m_NoiseMap;
 };

@@ -1,101 +1,43 @@
 #include "Chunk.h"
 
-//int column[CHUNK_SIZE][CHUNK_SIZE];
-
-//Chunk::Chunk(vec3 position)
-//	: m_Position(position)
-//{
-//	m_NoiseMap = new NoiseMap(CHUNK_SIZE);
-//	m_Mesh = new Mesh(this);
-//
-//	for (int x = 0; x < CHUNK_SIZE; x++)
-//	{
-//		for (int z = 0; z < CHUNK_SIZE; z++)
-//		{
-//			int air_blocks = (int)(3 * m_NoiseMap->GetGridValues()[x][z]);
-//			int col_height = CHUNK_HEIGHT - air_blocks;
-//
-//			for (int y = 0; y < CHUNK_HEIGHT; y++)
-//			{
-//				unsigned int ID;
-//
-//				if (y == CHUNK_HEIGHT - 1)
-//					ID = grass;
-//				else if (y < 13)
-//					ID = cobblestone;
-//				else
-//					ID = dirt;
-//
-//				vec3 blockWorldPos = vec3(m_Position.x * CHUNK_SIZE + x, y, m_Position.z * CHUNK_SIZE + z);
-//
-//				Block* block = new Block(vec3(x, y, z), blockWorldPos, ID);
-//				m_Blocks.push_back(block);
-//			}
-//			column[x][z] = col_height - 1;
-//		}
-//	}
-//}
-
-//chunk creation: 16x16x16 blocks
-//Chunk::Chunk(vec3 position) {
-//	m_Position = position;
-//
-//	int random_height = rand() % 16;
-//
-//	for (int y = 0; y < random_height; y++)
-//	{
-//		for (int z = 0; z < CHUNK_SIZE; z++)
-//		{
-//			for (int x = 0; x < CHUNK_SIZE; x++)
-//			{
-//				unsigned int ID;
-// 
-//				if (y == CHUNK_HEIGHT - 1)
-//					ID = grass;
-//				else if (y < 13)
-//					ID = cobblestone;
-//				else
-//					ID = dirt;
-//
-//				Block* block = new Block(vec3(x, y, z), m_Position, ID); // give the block a position based on the chunk position and its position in the chunk
-//				m_Blocks.push_back(block);
-//			}
-//		}
-//	}
-//}
-
-Chunk::Chunk(vec3 position, Player* player, unsigned int offset)
-	: m_Position(position), m_Player(player), m_OffsetIntoBuffer(offset)
+Chunk::Chunk(vec3 position, Player* player, unsigned int offset, unsigned int solidHeight)
+	: m_Position(position), m_OffsetIntoBuffer(offset), m_Player(player), m_LowestSolidHeight(solidHeight)
 {
-	m_LowestSolidHeight = 0;
-	m_NoiseMap = new NoiseMap(CHUNK_SIZE);
-
 	for (int y = 0; y < CHUNK_HEIGHT; y++)
 	{
 		for (int z = 0; z < CHUNK_SIZE; z++)
 		{
 			for (int x = 0; x < CHUNK_SIZE; x++)
 			{
-				int air_blocks = (int)(CHUNK_HEIGHT / 3 * m_NoiseMap->GetGridValues()[z][x]);
-				int col_height = CHUNK_HEIGHT - air_blocks;
-
-				if (x == 0 && z == 0)
-					m_LowestSolidHeight = col_height;
-				else if (col_height < m_LowestSolidHeight)
-					m_LowestSolidHeight = col_height;
-
 				short ID;
+
+				vec3 blockWorldPos = vec3(m_Position.x * CHUNK_SIZE + x, y, m_Position.z * CHUNK_SIZE + z);
+
+				// use the world position's x and z coordinates otherwise values would repeat themselves on a per-chunk basis
+				//unsigned int col_height = NoiseMap::GetValue(x, z) * CHUNK_HEIGHT; wrong
+				float coefficients_sum = 1.0f + 0.5f + 0.25f;
+
+				float nv = (NoiseMap::GetValue(blockWorldPos.x, blockWorldPos.z, 0.05f)
+					+ 0.5f * NoiseMap::GetValue(blockWorldPos.x, blockWorldPos.z, 0.1f)
+					+ 0.25 * NoiseMap::GetValue(blockWorldPos.x, blockWorldPos.z, 0.2f))
+					/ coefficients_sum;
+
+				unsigned int col_height = pow(nv, 2.0f) * CHUNK_HEIGHT;
+
+				col_height == 0 ? col_height = 1 : col_height;
+				//unsigned int col_height = nv * CHUNK_HEIGHT;
+
+				if (col_height < m_LowestSolidHeight)
+					m_LowestSolidHeight = col_height;
 
 				if (y >= col_height)
 					ID = air;
 				else if (y == col_height - 1)
 					ID = grass;
-				else if (y < CHUNK_HEIGHT / 2)
+				else if (y < CHUNK_HEIGHT / 4)
 					ID = cobblestone;
 				else
 					ID = dirt;
-
-				vec3 blockWorldPos = vec3(m_Position.x * CHUNK_SIZE + x, y, m_Position.z * CHUNK_SIZE + z);
 
 				Block* block = new Block(vec3(x, y, z), blockWorldPos, ID); // give the block a position based on the chunk position and its position in the chunk
 
@@ -104,60 +46,17 @@ Chunk::Chunk(vec3 position, Player* player, unsigned int offset)
 		}
 	}
 
-	m_Mesh = new Mesh(this);
+	m_Mesh = new Mesh();
 }
 
-//Chunk::Chunk(vec3 position, Player* player, unsigned int offset)
-//	: m_Position(position), m_Player(player), m_OffsetIntoBuffer(offset)
-//{
-//	m_LowestSolidHeight = 0;
-//
-//	m_NoiseMap = new NoiseMap(CHUNK_SIZE);
-//
-//	for (int x = 0; x < CHUNK_SIZE; x++)
-//	{
-//		for (int z = 0; z < CHUNK_SIZE; z++)
-//		{
-//			int air_blocks = (int)(CHUNK_HEIGHT / 3 * m_NoiseMap->GetGridValues()[x][z]);
-//			int col_height = CHUNK_HEIGHT - air_blocks; // height of solid blocks' column
-//
-//			if (x == 0 && z == 0)
-//				m_LowestSolidHeight = col_height;
-//			else if (col_height < m_LowestSolidHeight)
-//				m_LowestSolidHeight = col_height;
-//
-//			for (int y = 0; y < CHUNK_HEIGHT; y++)
-//			{
-//				short ID;
-//
-//				if (y >= col_height)
-//					ID = air;
-//				else if (y == col_height - 1)
-//					ID = grass;
-//				else if (y < CHUNK_HEIGHT / 2)
-//					ID = cobblestone;
-//				else
-//					ID = dirt;
-//
-//				vec3 blockWorldPos = vec3(m_Position.x * CHUNK_SIZE + x, y, m_Position.z * CHUNK_SIZE + z);
-//
-//				Block* block = new Block(vec3(x, y, z), blockWorldPos, ID); // give the block a position based on the chunk position and its position in the chunk
-//				m_Blocks.push_back(block);
-//			}
-//		}
-//	}
-//
-//	m_Mesh = new Mesh(this);
-//}
-
 // copy constructor
-Chunk::Chunk(Chunk& other, Player* player)
+Chunk::Chunk(Chunk& other)
 {
 	m_Position = other.m_Position;
 
-	m_NoiseMap = new NoiseMap(*other.m_NoiseMap);
-
 	m_OffsetIntoBuffer = other.m_OffsetIntoBuffer;
+
+	m_LowestSolidHeight = other.m_LowestSolidHeight;
 
 	m_Player = other.m_Player;
 
@@ -211,6 +110,7 @@ Chunk::Chunk(Chunk& other, Player* player)
 //	return m_Blocks[index];
 //}
 
+// index in the m_Blocks vector from x 
 Block* Chunk::GetBlock(vec3 blockPos)
 {
 	if (blockPos.x > CHUNK_SIZE - 1 || blockPos.z > CHUNK_SIZE - 1)
@@ -237,37 +137,14 @@ void Chunk::SetSurroundings(Chunk** surr)
 	}
 }
 
-// TODO: the blocks' world positions should be updated when a chunk position is modified via Terrain::GenerateWorld
-void Chunk::SetPosition(vec3 pos)
-{
-	m_Position = pos;
-}
-
 Chunk** Chunk::GetSurrounding() {
 	return m_Surrounding;
-}
-
-NoiseMap* Chunk::GetNoiseMap()
-{
-	return m_NoiseMap;
 }
 
 Player* Chunk::GetPlayer()
 {
 	return m_Player;
 }
-
-//Block* Chunk::GetBlock(vec3 position) {
-//	if (position.x > CHUNK_SIZE - 1 || position.y > CHUNK_HEIGHT - 1 || position.z > CHUNK_SIZE -  1)
-//		return nullptr;
-//
-//	if (position.x < 0 || position.y < 0 || position.z < 0)
-//		return nullptr;
-//
-//	int index = position.y * CHUNK_SIZE * CHUNK_SIZE + position.z * CHUNK_SIZE + position.x;
-//
-//	return m_Blocks[index];
-//}
 
 vec3 Chunk::GetPosition()
 {
@@ -294,40 +171,8 @@ unsigned int Chunk::GetLowestSolidHeight()
 	return m_LowestSolidHeight;
 }
 
-// this function is used for assigning one chunk to another: chunk1 = chunk2
-// it is useful because it does not leave the job of copying the class to the compiler
-// and also in this case it's better not to just assign the pointer of a chunk to another because it can cause problems like deleting two chunks that in reality point to the same one memory address
-// so the second deletion will crash the program, like it happens when sorting the chunks 
-
-//Chunk Chunk::operator= (Chunk other)
-//{
-//	printf("tatatata\n");
-//
-//	if (this == &other)
-//		return *this;
-//
-//	this->m_Position = other.m_Position;
-//
-//	this->m_NoiseMap = other.m_NoiseMap;
-//
-//	this->m_Surrounding[left] = other.m_Surrounding[left];
-//	this->m_Surrounding[right] = other.m_Surrounding[right];
-//	this->m_Surrounding[back] = other.m_Surrounding[back];
-//	this->m_Surrounding[front] = other.m_Surrounding[front];
-//
-//	for (int i = 0; i < this->m_Blocks.size(); i++)
-//	{
-//		this->m_Blocks[i] = other.m_Blocks[i];
-//	}
-//
-//	this->m_Mesh = other.m_Mesh;
-//
-//	return *this;
-//}
-
 Chunk::~Chunk() {
 	delete m_Mesh;
-	delete m_NoiseMap;
 	//delete m_Surrounding;
 
 	// free the memory of m_Surrounding field
@@ -352,11 +197,7 @@ Chunk& Chunk::operator= (Chunk& other)
 
 	m_Position = other.m_Position;
 
-	m_Player = other.m_Player;
-
 	m_OffsetIntoBuffer = other.m_OffsetIntoBuffer;
-
-	*m_NoiseMap = *other.m_NoiseMap;
 
 	// for m_Surrounding assign just the pointers
 	/*m_Surrounding = other.m_Surrounding;*/
@@ -383,4 +224,111 @@ Chunk& Chunk::operator= (Chunk& other)
 	}
 
 	return *this;
+}
+
+void Chunk::BuildMesh(terrain_buffers* terrainBufs, Block* blockPointed)
+{
+	unsigned int num_of_faces = m_Blocks.size() * FACES_PER_BLOCK;
+
+	offsets terrainOffsets;
+
+	// define offsets here in case chunks are rearranged
+	terrainOffsets.model = m_OffsetIntoBuffer * num_of_faces * 16 * sizeof(float);
+	terrainOffsets.tex = m_OffsetIntoBuffer * num_of_faces * 2 * sizeof(float) * INDICES_PER_FACE;
+	terrainOffsets.face_index = m_OffsetIntoBuffer * num_of_faces * sizeof(int);
+	terrainOffsets.pointedFlags = m_OffsetIntoBuffer * num_of_faces * sizeof(float);
+
+	m_Mesh->Clear();
+
+	// skip the whole section of the chunk before the first air block
+	size_t start = (m_LowestSolidHeight - 1) * CHUNK_SIZE * CHUNK_SIZE;
+	//size_t start = 0;
+
+	for (size_t i = start; i < m_Blocks.size(); i++)
+	{
+		Block* block = m_Blocks[i];
+
+		Camera* cam = m_Player->GetCam();
+		bool isBlockInsideFrustum = cam->IsInsideFrustum(block->GetWorldPosition());
+
+		if (block->GetID() != air && isBlockInsideFrustum)
+		{
+			if (block->GetWorldPosition() == blockPointed->GetWorldPosition())
+				block->m_IsPointed = true;
+
+			AddBlockToMesh(block);
+		}
+		
+		block->m_IsPointed = false; // reset m_IsPointed to false so it won't be highlighted when it's no longer pointed in the next mesh generations
+	}
+
+	// after the blocks are evaluated call mesh->Build which sends the data to the buffer object
+	m_Mesh->Build(terrainBufs, terrainOffsets);
+}
+
+void Chunk::AddBlockToMesh(Block* block)
+{
+	vec3 blp = block->GetLocalPosition();
+	Camera* cam = m_Player->GetCam();
+
+	// adjacent blocks' positions relative to the current one's local position
+	vec3 adjacentPositions[FACES_PER_BLOCK] = {
+		vec3(blp.x, blp.y + 1, blp.z),
+	    vec3(blp.x, blp.y - 1, blp.z),
+		vec3(blp.x - 1, blp.y, blp.z),
+		vec3(blp.x + 1, blp.y, blp.z),
+		vec3(blp.x, blp.y, blp.z + 1),
+		vec3(blp.x, blp.y, blp.z - 1)
+	};
+
+	for (int i = 0; i < FACES_PER_BLOCK; i++)
+	{
+		Chunk* adjChunk;
+		if (i < 2) // make sure the "sides" enum values are retrieved correctly
+			adjChunk = NULL;
+		else
+			adjChunk = m_Surrounding[i - 2];
+
+		if (!IsAdjacentBlockSolid(block, adjacentPositions[i], adjChunk))
+		{
+			m_Mesh->AddFace(block, m_Player->GetCam(), i);
+		}
+	}
+}
+
+bool Chunk::IsAdjacentBlockSolid(Block* block, vec3 adjBlockPos, Chunk* adjChunk)
+{
+	Block* adjBlock = GetBlock(adjBlockPos);
+
+	// if adjBlock == nullptr means that the block that's being checked to add to the mesh is a block on the edge of the chunk which mesh is being created
+	if (adjBlock == NULL)
+	{
+		// if the chunk which mesh that's being created has no adjacent chunk, then the edge faces are all rendered
+		if (adjChunk == NULL)
+			return false;
+
+		// intialize the adjacent block in the adjacent chunk's local position to the position of this block, then change its x and z coords properly
+		vec3 blockPosInOtherChunk = block->GetLocalPosition();
+
+		if (adjBlockPos.x > CHUNK_SIZE - 1)
+			blockPosInOtherChunk.x = 0.0;
+
+		if (adjBlockPos.x < 0)
+			blockPosInOtherChunk.x = CHUNK_SIZE - 1;
+
+		if (adjBlockPos.z > CHUNK_SIZE - 1)
+			blockPosInOtherChunk.z = 0.0;
+
+		if (adjBlockPos.z < 0)
+			blockPosInOtherChunk.z = CHUNK_SIZE - 1;
+
+		// if the position calculated has an air block placed at it, don't add face to the mesh
+		// GetBlock function below won't return nullptr because the condition if the adjChunk is nullptr has alredy been checked
+		if (adjChunk->GetBlock(blockPosInOtherChunk)->GetID() != air)
+			return true;
+	}
+	else if (adjBlock->GetID() != air)
+		return true;
+
+	return false;
 }

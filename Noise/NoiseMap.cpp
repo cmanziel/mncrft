@@ -1,11 +1,11 @@
 #include "NoiseMap.h"
 #include "perlin.h"
 
-NoiseMap::NoiseMap(int chunkSize)
-	: m_ChunkSize(chunkSize)
+NoiseMap::NoiseMap(int size)
+	: m_Size(size)
 {
 	//m_GridValues = (int*)malloc(sizeof(int) * chunkSize * chunkSize);
-	m_GridValues = (float**)malloc(sizeof(float*) * chunkSize);
+	m_GridValues = (float**)malloc(sizeof(float*) * size);
 
 	if (m_GridValues == NULL)
 	{
@@ -19,9 +19,9 @@ NoiseMap::NoiseMap(int chunkSize)
 // copy constructor
 NoiseMap::NoiseMap(NoiseMap& other)
 {
-	m_ChunkSize = other.m_ChunkSize;
+	m_Size = other.m_Size;
 
-	m_GridValues = (float**)malloc(sizeof(float*) * m_ChunkSize);
+	m_GridValues = (float**)malloc(sizeof(float*) * m_Size);
 
 	if (m_GridValues == NULL)
 	{
@@ -30,9 +30,9 @@ NoiseMap::NoiseMap(NoiseMap& other)
 	}
 
 	// copy the noise map of other in the noise map of this
-	for (int y = 0; y < m_ChunkSize; y++)
+	for (int y = 0; y < m_Size; y++)
 	{
-		m_GridValues[y] = (float*)malloc(sizeof(float) * m_ChunkSize);
+		m_GridValues[y] = (float*)malloc(sizeof(float) * m_Size);
 
 		if (m_GridValues[y] == NULL)
 		{
@@ -40,7 +40,7 @@ NoiseMap::NoiseMap(NoiseMap& other)
 			return;
 		}
 
-		for (int x = 0; x < m_ChunkSize; x++)
+		for (int x = 0; x < m_Size; x++)
 		{
 			m_GridValues[y][x] = other.m_GridValues[y][x];
 		}
@@ -49,9 +49,9 @@ NoiseMap::NoiseMap(NoiseMap& other)
 
 void NoiseMap::GenerateMap()
 {
-	for (int y = 0; y < m_ChunkSize; y++)
+	for (int y = 0; y < m_Size; y++)
 	{
-		m_GridValues[y] = (float*)malloc(sizeof(float) * m_ChunkSize);
+		m_GridValues[y] = (float*)malloc(sizeof(float) * m_Size);
 
 		if (m_GridValues[y] == NULL)
 		{
@@ -59,9 +59,9 @@ void NoiseMap::GenerateMap()
 			return;
 		}
 
-		for (int x = 0; x < m_ChunkSize; x++)
+		for (int x = 0; x < m_Size; x++)
 		{
-			m_GridValues[y][x] = perlin(x + 0.5, y + 0.5);
+			m_GridValues[y][x] = perlin(x + 0.5f, y + 0.5f);
 		}
 	}
 }
@@ -71,16 +71,21 @@ float** NoiseMap::GetGridValues()
 	return m_GridValues;
 }
 
+float NoiseMap::GetValue(float x, float y, float frequency)
+{
+	return perlin((x + 0.5f) * frequency, (y + 0.5f) * frequency);
+}
+
 NoiseMap& NoiseMap::operator= (NoiseMap& other)
 {
 	if (this == &other)
 		return *this;
 
-	m_ChunkSize = other.m_ChunkSize;
+	m_Size = other.m_Size;
 
-	for (int y = 0; y < m_ChunkSize; y++)
+	for (int y = 0; y < m_Size; y++)
 	{
-		for (int x = 0; x < m_ChunkSize; x++)
+		for (int x = 0; x < m_Size; x++)
 		{
 			m_GridValues[y][x] = other.m_GridValues[y][x];
 		}
@@ -92,7 +97,7 @@ NoiseMap& NoiseMap::operator= (NoiseMap& other)
 NoiseMap::~NoiseMap()
 {
 	// free pointer of pointers
-	for (int i = 0; i < m_ChunkSize; i++)
+	for (int i = 0; i < m_Size; i++)
 	{
 		free(m_GridValues[i]);
 	}

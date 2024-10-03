@@ -12,29 +12,44 @@
 #define DBG_NEW new
 #endif
 
-#include "../Camera.h"
-#include "../Chunk/Chunk.h"
+#include "../Camera/Camera.h"
 
 #define CHUNK_RADIUS 5
+
+enum state
+{
+	STATE_WATCH, STATE_BREAK
+};
 
 class Player
 {
 public:
 	Player();
-	int GetChunkRadius();
-	Camera* GetCam();
-	void UpdateChunkGridPosition();
+	~Player();
 
+	uint8_t GetState();
+	void ChangeState(uint8_t state);
+
+	vec3 GetWorldPosition();
+
+	void UpdateChunkGridPosition(vec3 chunkGridPos);
 	vec3 GetChunkGridPosition();
 
 	vec3 GetLastChunkGridPosition();
 	void SetLastChunkGridPosition();
 
-	~Player();
+	Camera* GetCam();
+
+	Ray m_Ray;
+	float m_BreakMaxDistance; // maximum distance from a block to be able to break it
 
 private:
 	Camera* m_PlayerCam;
-	int m_ChunkRadius;
+
+	uint8_t m_State;
+
+	vec3 m_WorldPosition;
+
 	vec3 m_ChunkGridPosition;
 	vec3 m_LastGridPosition;
 };

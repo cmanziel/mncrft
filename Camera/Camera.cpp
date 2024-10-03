@@ -15,11 +15,9 @@ enum sides {
     front, back, left, right, top, bottom
 };
 
-Camera::Camera()
-    : m_fovy(M_PI / 4), m_FocalLength(0.1f), m_NearToFarDistance(99.9f)
+Camera::Camera(vec3 playerPos)
+    : m_fovy(M_PI / 4), m_FocalLength(0.1f), m_NearToFarDistance(99.9f), m_CameraPos(playerPos)
 {
-    // place the camera at the centre of the chunk and at CHUNK_HEIGHT
-    m_CameraPos = vec3(8.0, 20.0, 8.0);
     m_CameraDir = glm::normalize(vec3(0.0, 0.0, -1.0));
     //m_CameraDir = glm::normalize(-m_CameraPos);
 
@@ -211,6 +209,21 @@ vec3 Camera::GetPosition()
     return m_CameraPos;
 }
 
+vec3 Camera::GetDirection()
+{
+    return m_CameraDir;
+}
+
+vec3 Camera::GetCameraFront()
+{
+    return m_CameraFront;
+}
+
+float Camera::GetFocalLength()
+{
+    return m_FocalLength;
+}
+
 // position; chunk's world position coordinates
 bool Camera::IsPosInFrontOfCamera(vec3 playerChunkGridPos, vec3 position)
 {
@@ -255,7 +268,10 @@ bool Camera::IsInsideFrustum(vec3 position)
     else
         t = projection.z / m_CameraDir.z;
 
-    if (t < m_FocalLength)
+    //if (t < m_FocalLength)
+    //    return false;
+
+    if (t < -1.0)
         return false;
     
     // check if position's distance from near plane is inside m_NearToFaeDistance
@@ -273,12 +289,12 @@ bool Camera::IsInsideFrustum(vec3 position)
     // distances from camera's axis' planes, in fact the coordinates relative to the positive semiaxis of the camera's coordinate systems
     // if distance of position (function argument) from camera's plane whose normal is camera_left is greater than the distance of plane_left from the same plane, then position is outside frustum
 
-    if (point_plane_distance(m_CameraFront, camera_left, position) > plane_horizontal_boundary)
+    if (point_plane_distance(m_CameraFront, camera_left, position) > plane_horizontal_boundary + 1.0)
         return false;
 
     // change m_CameraUp vector, now it's fixe to worldUp which is (0.0, 1.0, 0.0)
     vec3 camera_up = glm::cross(m_CameraDir, camera_left);
-    if (point_plane_distance(m_CameraFront, camera_up, position) > plane_vertical_boundary)
+    if (point_plane_distance(m_CameraFront, camera_up, position) > plane_vertical_boundary + 1.0)
         return false;
 
     return true;

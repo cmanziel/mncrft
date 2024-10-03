@@ -4,10 +4,18 @@
 
 #include "../Input/Input.h"
 
+typedef struct
+{
+    double x;
+    double y;
+} cursor;
+
+#define CURSOR_DELTA_MOVEMENT 1
+
 class Window
 {
 public:
-	Window(Input* inputHandler);
+	Window(Input* inputHandler, unsigned int width, unsigned int height);
 
     void key_callback(int key, int scancode, int actions, int mods)
     {
@@ -16,15 +24,18 @@ public:
 
     GLFWwindow* GetGLFWWindow();
     Input* GetInputHandler();
-    
-    float GetAspectRatio();
 
-    void CheckKeyInput();
+    void CheckInput();
+    void CursorMovement();
 
 private:
 	GLFWwindow* m_Window;
+    unsigned int m_Width;
+    unsigned int m_Height;
     Input* m_InputHandler;
     float m_AspectRatio;
+    cursor m_CursorPos;
+    cursor m_LastCursorPos;
 
     static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
     {

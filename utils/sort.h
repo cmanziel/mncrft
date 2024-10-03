@@ -72,7 +72,7 @@ void insertion_sort_chunks(std::vector<Chunk*> chunks, int start, int end, int c
         {
             //Chunk* currentChunk = (Chunk*)malloc(sizeof(Chunk*));
 
-            Chunk* currentChunk = new Chunk(*chunks[i], chunks[i]->GetPlayer());
+            Chunk* currentChunk = new Chunk(*chunks[i]);
 
             int j = i - 1;
 

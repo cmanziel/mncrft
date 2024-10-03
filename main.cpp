@@ -1,22 +1,17 @@
 /* TODO:
     1. make world generation faster:
-        - allocated only chunks in front of the camera, set the other ones to nullptr
-
         - having a model matrix for every face is memory expensive, maybe use a block's world position as a vertex attribute and initalize the model matrix for the vertex inside the shader
 
         - loop thorugh the meshes starting from the ones closer to the player so they're the first ones to be generated
 
-    3. use a ray cast to break and add blocks (regenerate the mesh of the chunk that's being modified)
-    4. add ligthing to the scene, initially use the jdh method, give east and west faces of a block different lighting simulating light coming from a certain direction
+    2. block breaking:
+        - highlight the borders of the block pointed by the camera's ray, use barycentric coordinates for it
+        - better solution for breaking blocks at a chunk edge, for now every time a block is being broken the lowest solid height out of the chunk and its surroundings is evaluated then set as their lowest solid height
 */
 
 /* TODO:
     * learn about the random seed for world generation
     * RANDOM WALK technique for generating mountains and caves?
-*/
-
-/* DONE:
-    * locked the game to 60fps and generate one mesh per frame 
 */
 
 #define _CRTDBG_MAP_ALLOC
@@ -32,7 +27,7 @@
 #endif
 
 #include <iostream>
-#include "Renderer.h"
+#include "Renderer/Renderer.h"
 #include "TextureAtlas/TextureAtlas.h"
 #include "Window/Window.h"
 
@@ -51,7 +46,7 @@ int main()
 
     Player* player = DBG_NEW Player();
     Input inputHandler = Input(player);
-    Window* window = DBG_NEW Window(&inputHandler);
+    Window* window = DBG_NEW Window(&inputHandler, 1280, 960);
 
     GLFWwindow* GLFWwin = window->GetGLFWWindow();
 
@@ -61,9 +56,9 @@ int main()
         return -1;
     }
 
+    Terrain* terrain = DBG_NEW Terrain(player);
     Renderer* renderer = DBG_NEW Renderer();
     TextureAtlas* atlas = DBG_NEW TextureAtlas();
-    Terrain* terrain = DBG_NEW Terrain(player);
 
     float start = glfwGetTime(); // time in seconds
 
@@ -82,7 +77,7 @@ int main()
 
         //printf("frame rate: %f\n", 1.0 / (currentFrame - lastFrame));
 
-        lastFrame = currentFrame;
+        //lastFrame = currentFrame;
 
         //if (deltaTime < timeForFrameRate)
         //    continue;
@@ -93,14 +88,12 @@ int main()
 
         // process input and genrate meshes accordingly every frame
         //but only render every 1 / 60 seconds, 60 fps
-        window->CheckKeyInput();
+        window->CheckInput();
 
-        terrain->GenerateWorld(player);
+        terrain->UpdatePlayerChunkGridPosition();
+        terrain->GenerateWorld();
 
         renderer->Draw(terrain);
-
-        //sets the player's last chunk grid position to its current position
-        player->SetLastChunkGridPosition();
 
         /* Swap front and back buffers */
         glfwSwapBuffers(GLFWwin);

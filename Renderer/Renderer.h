@@ -14,8 +14,8 @@
 #define DBG_NEW new
 #endif
 
-#include "Terrain.h"
-#include "Shader.h"
+#include "../Terrain/Terrain.h"
+#include "../Shader/Shader.h"
 #include <vector>
 #include <glm/gtc/type_ptr.hpp>
 
