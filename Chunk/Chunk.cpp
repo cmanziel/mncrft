@@ -1,10 +1,54 @@
 #include "Chunk.h"
 
-Chunk::Chunk(vec3 position, Player* player, unsigned int offset, unsigned int solidHeight)
-	: m_Position(position), m_OffsetIntoBuffer(offset), m_Player(player), m_LowestSolidHeight(solidHeight)
+//Chunk::Chunk(vec3 position, Player* player, unsigned int offset, int worldSeed)
+//	: m_Position(position), m_OffsetIntoBuffer(offset), m_Player(player), m_WorldSeed(worldSeed)
+//{
+//	m_LowestSolidHeight = 0;
+//
+//	for (int z = 0; z < CHUNK_SIZE; z++)
+//	{
+//		for (int x = 0; x < CHUNK_SIZE; x++)
+//		{
+//			// calculate height of column of blocks
+//			unsigned int col_height = NoiseMap::GetValue(x, z, worldSeed) * CHUNK_HEIGHT;
+//
+//			col_height == 0 ? col_height = 1 : col_height;
+//
+//			if (x == 0 && z == 0)
+//				m_LowestSolidHeight = col_height;
+//			else if (col_height < m_LowestSolidHeight)
+//				m_LowestSolidHeight = col_height;
+//
+//			m_Biome = Biome::Assign(col_height);
+//
+//			for (int y = 0; y < CHUNK_HEIGHT; y++)
+//			{
+//				short ID;
+//
+//				ID = Biome::AssignBlockID(m_Biome, y, col_height);
+//
+//				vec3 blockWorldPos = vec3(m_Position.x * CHUNK_SIZE + x, y, m_Position.z * CHUNK_SIZE + z);
+//				Block* block = new Block(vec3(x, y, z), blockWorldPos, ID);
+//
+//				m_Blocks.push_back(block);
+//			}
+//		}
+//	}
+//
+//	m_Mesh = new Mesh();
+//}
+
+struct Heightmap {
+	unsigned int h;
+	biome b;
+};
+
+Chunk::Chunk(vec3 position, Player* player, unsigned int offset, int worldSeed)
+	: m_Position(position), m_OffsetIntoBuffer(offset), m_Player(player)
 {
-	m_Biome = new Biome(position);
 	m_LowestSolidHeight = 0;
+
+	struct Heightmap hm[CHUNK_SIZE][CHUNK_SIZE];
 
 	for (int y = 0; y < CHUNK_HEIGHT; y++)
 	{
@@ -12,27 +56,33 @@ Chunk::Chunk(vec3 position, Player* player, unsigned int offset, unsigned int so
 		{
 			for (int x = 0; x < CHUNK_SIZE; x++)
 			{
-				short ID;
+				vec3 bwp = vec3(m_Position.x * CHUNK_SIZE + x, y, m_Position.z * CHUNK_SIZE + z);
 
-				vec3 blockWorldPos = vec3(m_Position.x * CHUNK_SIZE + x, y, m_Position.z * CHUNK_SIZE + z);
+				if (y == 0)
+				{
+					unsigned int h = NoiseMap::GetValue(bwp.x, bwp.z, worldSeed) * CHUNK_HEIGHT;
+					h == 0 ? h = 1 : h;
+					hm[z][x].h = h;
 
-				float nv = m_Biome->GetBiomeNoise(blockWorldPos);
-				//float nv = Forest::GetBiomeNoise(blockWorldPos);
+					// average the neighbouring columns' height
+					//hm[z][x].h = NoiseMap::GetValue(bwp.x + 1, bwp.z, worldSeed)
+					//	+ NoiseMap::GetValue(bwp.x - 1, bwp.z, worldSeed)
+					//	+ NoiseMap::GetValue(bwp.x, bwp.z + 1, worldSeed)
+					//	+ NoiseMap::GetValue(bwp.x, bwp.z - 1, worldSeed);
 
-				unsigned int col_height = nv * CHUNK_HEIGHT;
 
-				col_height == 0 ? col_height = 1 : col_height;
-				//unsigned int col_height = nv * CHUNK_HEIGHT;
 
-				if (x == 0 && z == 0)
-					m_LowestSolidHeight = col_height;
-				else if (col_height < m_LowestSolidHeight)
-					m_LowestSolidHeight = col_height;
+					if (x == 0 && z == 0)
+						m_LowestSolidHeight = h;
+					else if (h < m_LowestSolidHeight)
+						m_LowestSolidHeight = h;
 
-				ID = m_Biome->AssignBlockID(blockWorldPos, col_height, CHUNK_HEIGHT);
-				//ID = Forest::AssignBlockID(blockWorldPos, col_height, CHUNK_HEIGHT);
+					hm[z][x].b = Biome::Assign(h);
+				}
 
-				Block* block = new Block(vec3(x, y, z), blockWorldPos, ID); // give the block a position based on the chunk position and its position in the chunk
+				short ID = Biome::AssignBlockID(hm[z][x].b, y, hm[z][x].h);
+
+				Block* block = new Block(vec3(x, y, z), bwp, ID);
 
 				m_Blocks.push_back(block);
 			}
@@ -91,7 +141,7 @@ Chunk::~Chunk() {
 
 	//free(m_Surrounding);
 
-	delete m_Biome;
+	//delete m_Biome;
 
 	for (Block* b : m_Blocks)
 		delete b;
@@ -124,7 +174,7 @@ Chunk::~Chunk() {
 //	return m_Blocks[index];
 //}
 
-// index in the m_Blocks vector from x 
+// blocks allocated row by row from bottom to top
 Block* Chunk::GetBlock(vec3 blockPos)
 {
 	if (blockPos.x > CHUNK_SIZE - 1 || blockPos.z > CHUNK_SIZE - 1)
@@ -142,6 +192,25 @@ Block* Chunk::GetBlock(vec3 blockPos)
 
 	return m_Blocks[index];
 }
+
+// blocks allocated column by column
+//Block* Chunk::GetBlock(vec3 blockPos)
+//{
+//	if (blockPos.x > CHUNK_SIZE - 1 || blockPos.z > CHUNK_SIZE - 1)
+//	{
+//		return NULL;
+//	}
+//
+//	if (blockPos.y > CHUNK_HEIGHT - 1)
+//		return NULL;
+//
+//	if (blockPos.x < 0 || blockPos.y < 0 || blockPos.z < 0)
+//		return NULL;
+//
+//	unsigned int index = blockPos.z * CHUNK_SIZE * CHUNK_HEIGHT + blockPos.x * CHUNK_HEIGHT + blockPos.y;
+//
+//	return m_Blocks[index];
+//}
 
 void Chunk::SetSurroundings(Chunk** surr)
 {

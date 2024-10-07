@@ -47,5 +47,5 @@ public:
 private:
 	terrain_buffers* m_Buffers;
 	Player* m_Player;
-	NoiseMap* m_NoiseMap;
+	int m_Seed;
 };

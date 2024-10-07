@@ -17,7 +17,7 @@
 #include "../Player/Player.h"
 
 #define CHUNK_SIZE 16
-#define CHUNK_HEIGHT 50
+#define CHUNK_HEIGHT 256
 
 // these indexes should map the block "sides" enum indexes so that the function AddBlockToMesh functions properly when looping through a block's faces
 enum surr_chunks {
@@ -32,7 +32,7 @@ enum surr_chunks {
 class Chunk
 {
 public:
-	Chunk(vec3 position, Player* player, unsigned int offsetIntoBuffer, unsigned int solidHeight);
+	Chunk(vec3 position, Player* player, unsigned int offsetIntoBuffer, int worldSeed);
 	Chunk(Chunk& other);
 	Chunk& operator= (Chunk& other);
 	~Chunk();
@@ -67,5 +67,6 @@ private:
 	std::vector<Block*> m_Blocks;
 	Mesh* m_Mesh;
 	unsigned int m_OffsetIntoBuffer;
-	Biome* m_Biome;
+	enum biome m_Biome;
+	int m_WorldSeed;
 };

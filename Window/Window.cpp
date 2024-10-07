@@ -48,6 +48,9 @@ void Window::CheckInput()
 	if (glfwGetKey(m_Window, GLFW_KEY_S) == GLFW_PRESS)
 		cam->Move(GLFW_KEY_S);
 
+	if (glfwGetKey(m_Window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		glfwSetWindowShouldClose(m_Window, GLFW_TRUE);
+
 	//if (glfwGetKey(m_Window, GLFW_KEY_UP) == GLFW_PRESS)
 	//	cam->Rotate(GLFW_KEY_UP);
 	//if (glfwGetKey(m_Window, GLFW_KEY_DOWN) == GLFW_PRESS)

@@ -9,8 +9,7 @@
 class Plain
 {
 public:
-	static short AssignBlockID(vec3 position, unsigned int col_height, unsigned int chunk_height);
-	static float GetBiomeNoise(vec3 position);
+	static short AssignBlockID(unsigned int y, unsigned int colHeight);
 private:
 };
 

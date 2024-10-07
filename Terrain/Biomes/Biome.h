@@ -2,11 +2,12 @@
 
 #define BIOME_H
 
+#include "../../Noise/noise1234.h"
 #include "Beach.h"
 #include "Forest.h"
 #include "Plain.h"
 
-enum types
+enum biome
 {
 	FOREST_BIOME, BEACH_BIOME, PLAIN_BIOME
 };
@@ -14,15 +15,9 @@ enum types
 class Biome
 {
 public:
-	Biome(vec3 position);
-	~Biome() = default;
-
-	Biome& operator=(Biome& other);
-
-	short AssignBlockID(vec3 position, unsigned int colHeight, unsigned int chunkHeight); // col_height: height of the column of solid blocks of the curretn block whose id is being assigned
-	float GetBiomeNoise(vec3 position);
+	static biome Assign(unsigned int colHeight);
+	static short AssignBlockID(enum biome colBiome, unsigned int y, unsigned int colHeight);
 private:
-	short m_Type;
 };
 
 #endif // !BIOME_H

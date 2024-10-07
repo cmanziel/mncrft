@@ -1,59 +1,38 @@
 #include "Biome.h"
 
-Biome::Biome(vec3 position)
-{
+//Biome::Biome()
+//{
+//
+//}
 
+biome Biome::Assign(unsigned int colHeight)
+{
+	if (colHeight > 30)
+		return FOREST_BIOME;
+	else if (colHeight < 10)
+		return BEACH_BIOME;
+	else
+		return PLAIN_BIOME;
 }
 
-Biome& Biome::operator=(Biome& other)
-{
-	m_Type = other.m_Type;
-
-	return *this;
-}
-
-short Biome::AssignBlockID(vec3 position, unsigned int colHeight, unsigned int chunkHeight)
+short Biome::AssignBlockID(biome colBiome, unsigned int y, unsigned int colHeight)
 {
 	short ID = sand;
 
-	switch (m_Type)
+	switch (colBiome)
 	{
 	case FOREST_BIOME:
-		ID = Forest::AssignBlockID(position, colHeight, chunkHeight);
+		ID = Forest::AssignBlockID(y, colHeight);
 		break;
 	case BEACH_BIOME:
-		ID = Beach::AssignBlockID(position, colHeight, chunkHeight);
+		ID = Beach::AssignBlockID(y, colHeight);
 		break;
 	case PLAIN_BIOME:
-		ID = Plain::AssignBlockID(position, colHeight, chunkHeight);
+		ID = Plain::AssignBlockID(y, colHeight);
 		break;
 	default:
-		Plain::AssignBlockID(position, colHeight, chunkHeight);
+		ID = Plain::AssignBlockID(y, colHeight);
 	}
-
-	return sand;
 
 	return ID;
-}
-
-float Biome::GetBiomeNoise(vec3 position)
-{
-	float nv; // default in case of error
-
-	switch (m_Type)
-	{
-	case FOREST_BIOME:
-		nv = Forest::GetBiomeNoise(position);
-		break;
-	case BEACH_BIOME:
-		nv = Beach::GetBiomeNoise(position);
-		break;
-	case PLAIN_BIOME:
-		nv = Plain::GetBiomeNoise(position);
-		break;
-	default:
-		nv = Plain::GetBiomeNoise(position);
-	}
-
-	return nv;
 }

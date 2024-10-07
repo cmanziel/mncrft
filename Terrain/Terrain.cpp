@@ -8,7 +8,10 @@ Terrain::Terrain(Player* player)
 {
 	m_CurrentChunk = 0;
 	m_TotalChunks = (CHUNK_RADIUS * 2 + 1) * (CHUNK_RADIUS * 2 + 1);
-	m_NoiseMap = new NoiseMap(CHUNK_RADIUS * 2 + 1);
+
+	srand(time(NULL));
+
+	m_Seed = rand();
 
 	int chunkX = m_Player->GetChunkGridPosition().x;
 	int chunkZ = m_Player->GetChunkGridPosition().z;
@@ -22,10 +25,7 @@ Terrain::Terrain(Player* player)
 		{
 			vec3 pos = vec3(startX + x, 0, startZ + z);
 
-			//unsigned int solid_height = m_NoiseMap->GetGridValues()[z][x] * CHUNK_HEIGHT;
-			unsigned int solid_height = CHUNK_HEIGHT * m_NoiseMap->GetValue(x, z, 1.0f);
-
-			Chunk* chunk = new Chunk(pos, m_Player, chunk_offset, solid_height);
+			Chunk* chunk = new Chunk(pos, m_Player, chunk_offset, m_Seed);
 
 			m_Chunks[z][x] = chunk;
 
@@ -81,7 +81,7 @@ Terrain::~Terrain()
 	delete m_Buffers->face_index;
 	delete m_Buffers->pointedFlags;
 
-	delete m_NoiseMap;
+	//delete m_NoiseMap;
 
 	free(m_Buffers);
 
@@ -318,6 +318,12 @@ void Terrain::BreakBlock()
 		int pointX = CHUNK_RADIUS + pointXFromPlayer;
 		int pointZ = CHUNK_RADIUS + pointZFromPlayer;
 
+		if (CHUNK_RADIUS == 0)
+		{
+			pointX = 0;
+			pointZ = 0;
+		}
+
 		Chunk* chunk = m_Chunks[pointZ][pointX];
 
 		// evaluate the block's local position
@@ -345,6 +351,9 @@ void Terrain::BreakBlock()
 
 			if (blockToBreak->GetLocalPosition().y == chunk->m_LowestSolidHeight && chunk->m_LowestSolidHeight - 1 > 0)
 				chunk->m_LowestSolidHeight--;
+
+			if (CHUNK_RADIUS == 0) // no surrounding chunks
+				return;
 
 			// set the surrounding chunk m_LoestSolidHeight field to the lowest out of the four
 			uint8_t lowest = chunk->m_LowestSolidHeight;

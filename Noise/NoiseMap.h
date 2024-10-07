@@ -14,27 +14,16 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <limits.h>
+#include <time.h>
+#include <stdint.h>
+#include "noise1234.h"
 
 class NoiseMap
 {
 public:
-	NoiseMap(int chunkSize);
-	NoiseMap(NoiseMap& other);
-
-	NoiseMap& operator= (NoiseMap& other);
-
-	void GenerateMap();
-	float** GetGridValues();
-
-	static float GetValue(float x, float y, float frequency);
-
-	~NoiseMap();
-
-	static float m_BaseFrequency;
+	static float GetValue(float x, float y, unsigned long seed);
 private:
-	float** m_GridValues;
-	int m_Size;
 };
 
 //every chunk has a noisemap field
