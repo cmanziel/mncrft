@@ -21,6 +21,8 @@ float NoiseMap::GetValue(float x, float z, unsigned long seed)
 
 	nv /= 1.75f;
 
+	nv = powf(fabsf(nv), 1.2f);
+
 	nv += 1.0f;
 	nv /= 2.0f;
 

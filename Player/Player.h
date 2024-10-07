@@ -14,7 +14,7 @@
 
 #include "../Camera/Camera.h"
 
-#define CHUNK_RADIUS 2
+#define CHUNK_RADIUS 7
 
 enum state
 {

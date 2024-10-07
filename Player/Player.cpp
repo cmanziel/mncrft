@@ -4,7 +4,7 @@
 
 Player::Player()
 {
-	m_WorldPosition = vec3(0.0, 17.0, 0.0);
+	m_WorldPosition = vec3(0.0, 0.0, 0.0);
 	m_BreakMaxDistance = 5.0;
 	m_State = STATE_WATCH;
 

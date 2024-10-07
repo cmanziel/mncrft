@@ -29,6 +29,11 @@ enum surr_chunks {
 	* but the blocks don't need to store neither faces nor vertices because they are all the same for each one of them
 */
 
+struct Heightmap {
+	unsigned int h;
+	biome b;
+};
+
 class Chunk
 {
 public:
