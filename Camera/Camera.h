@@ -13,7 +13,7 @@ enum axis {
 class Camera
 {
 public:
-	Camera(vec3 playerPos);
+	Camera(vec3 playerPos, unsigned int camWidth, unsigned int camHeight);
 	
 	mat4 GetMVP(vec3 blockTrans);
 	mat4 GetModelMat4(vec3 blockTrans, int side);

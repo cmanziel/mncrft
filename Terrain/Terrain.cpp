@@ -218,7 +218,7 @@ void Terrain::RearrangeChunks()
 			// allocate new Chunk with correct position, and assign to it the to-be-replaced chunk's offset into the terrain buffers
 			Chunk* toReplace = m_Chunks[z][columnX];
 			vec3 newPos = vec3(chunkX + offset.x, 0, chunkZ - CHUNK_RADIUS + z);
-			Chunk* newChunk = new Chunk(newPos, m_Player, toReplace->GetOffsetIntoBuffer(), toReplace->m_LowestSolidHeight);
+			Chunk* newChunk = new Chunk(newPos, m_Player, toReplace->GetOffsetIntoBuffer(), m_Seed);
 
 			newColumn[z] = newChunk;
 
@@ -259,7 +259,7 @@ void Terrain::RearrangeChunks()
 		{
 			Chunk* toReplace = m_Chunks[rowZ][x];
 			vec3 newPos = vec3(chunkX - CHUNK_RADIUS + x, 0, chunkZ + offset.z);
-			Chunk* newChunk = new Chunk(newPos, m_Player, toReplace->GetOffsetIntoBuffer(), toReplace->m_LowestSolidHeight);
+			Chunk* newChunk = new Chunk(newPos, m_Player, toReplace->GetOffsetIntoBuffer(), m_Seed);
 
 			newRow[x] = newChunk;
 

@@ -18,11 +18,13 @@
 #include <time.h>
 #include <stdint.h>
 #include "noise1234.h"
+#include <noise/noise.h>
 
 class NoiseMap
 {
 public:
-	static float GetValue(float x, float y, unsigned long seed);
+	static float GetValue(float x, float y, int seed);
+	static float octave(unsigned int n, unsigned int o, float x, float z, int seed);
 private:
 };
 

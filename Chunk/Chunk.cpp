@@ -55,33 +55,19 @@ Chunk::Chunk(vec3 position, Player* player, unsigned int offset, int worldSeed)
 
 				if (y == 0)
 				{
-					//unsigned int h = NoiseMap::GetValue(bwp.x, bwp.z, worldSeed) * CHUNK_HEIGHT;
-					//h == 0 ? h = 1 : h;
-					//hm[z][x].h = h;
+					float nv = NoiseMap::GetValue(bwp.x, bwp.z, worldSeed);
 
-					// average the neighbouring columns' height
-					//hm[z][x].h = NoiseMap::GetValue(bwp.x + 1, bwp.z, worldSeed)
-					//	+ NoiseMap::GetValue(bwp.x - 1, bwp.z, worldSeed)
-					//	+ NoiseMap::GetValue(bwp.x, bwp.z + 1, worldSeed)
-					//	+ NoiseMap::GetValue(bwp.x, bwp.z - 1, worldSeed);
+					unsigned int h = nv * CHUNK_HEIGHT;
 
-					float h = NoiseMap::GetValue(bwp.x + 1, bwp.z, worldSeed) +
-						+ NoiseMap::GetValue(bwp.x - 1, bwp.z, worldSeed)
-						+ NoiseMap::GetValue(bwp.x, bwp.z + 1, worldSeed)
-						+ NoiseMap::GetValue(bwp.x, bwp.z - 1, worldSeed);
-
-					h *= 0.25f; // average
-
-					unsigned int hb = h * CHUNK_HEIGHT;
-
-					hm[z][x].h = hb == 0 ? 1 : hb;
+					h = h == 0 ? 1 : h;
 
 					if (x == 0 && z == 0)
-						m_LowestSolidHeight = hb;
-					else if (hb < m_LowestSolidHeight)
-						m_LowestSolidHeight = hb;
+						m_LowestSolidHeight = h;
+					else if (h < m_LowestSolidHeight)
+						m_LowestSolidHeight = h;
 
-					hm[z][x].b = Biome::Assign(hb);
+					hm[z][x].b = Biome::Assign(h);
+					hm[z][x].h = h;
 				}
 
 				short ID = Biome::AssignBlockID(hm[z][x].b, y, hm[z][x].h);
@@ -319,7 +305,8 @@ void Chunk::BuildMesh(terrain_buffers* terrainBufs, Block* blockPointed)
 		Camera* cam = m_Player->GetCam();
 		bool isBlockInsideFrustum = cam->IsInsideFrustum(block->GetWorldPosition());
 
-		if (block->GetID() != air && isBlockInsideFrustum)
+		//if (block->GetID() != air && isBlockInsideFrustum)
+		if (block->GetID() != air)
 		{
 			if (block->GetWorldPosition() == blockPointed->GetWorldPosition())
 				block->m_IsPointed = true;

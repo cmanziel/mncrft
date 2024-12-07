@@ -15,8 +15,8 @@ enum sides {
     front, back, left, right, top, bottom
 };
 
-Camera::Camera(vec3 playerPos)
-    : m_fovy(M_PI / 4), m_FocalLength(0.1f), m_NearToFarDistance(99.9f), m_CameraPos(playerPos)
+Camera::Camera(vec3 playerPos, unsigned int camWidth, unsigned int camHeight)
+    : m_fovy(M_PI / 4), m_FocalLength(0.1f), m_NearToFarDistance(500.0f), m_CameraPos(playerPos)
 {
     m_CameraDir = glm::normalize(vec3(0.0, 0.0, -1.0));
     //m_CameraDir = glm::normalize(-m_CameraPos);
@@ -27,7 +27,7 @@ Camera::Camera(vec3 playerPos)
     m_CameraUp = glm::normalize(glm::cross(m_CameraDir, camera_left));
 
     float near_plane_top = m_FocalLength * tan(m_fovy / 2);
-    float aspect_ratio = 1280.0 / 960; // TODO: get the actual aspect ratio from the window class' field
+    float aspect_ratio = (float)camWidth / camHeight; // TODO: get the actual aspect ratio from the window class' field
     m_NearPlaneLeft = near_plane_top * aspect_ratio;
 
     //m_yaw = glm::degrees(glm::angle(vec3(1.0, 0.0, 0.0), m_CameraDir));

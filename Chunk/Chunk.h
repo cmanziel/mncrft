@@ -74,4 +74,5 @@ private:
 	unsigned int m_OffsetIntoBuffer;
 	enum biome m_Biome;
 	int m_WorldSeed;
+	biome m_ColBiomes[CHUNK_SIZE][CHUNK_SIZE];
 };

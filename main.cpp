@@ -44,9 +44,12 @@ int main()
     if (!glfwInit())
         return -1;
 
-    Player* player = DBG_NEW Player();
+    unsigned int width = 1800;
+    unsigned int height = 1200;
+
+    Player* player = DBG_NEW Player(width, height);
     Input inputHandler = Input(player);
-    Window* window = DBG_NEW Window(&inputHandler, 1280, 960);
+    Window* window = DBG_NEW Window(&inputHandler, width, height);
 
     GLFWwindow* GLFWwin = window->GetGLFWWindow();
 

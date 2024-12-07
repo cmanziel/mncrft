@@ -10,6 +10,9 @@ TextureAtlas::TextureAtlas() {
 
 	unsigned char* data = stbi_load("TextureAtlas/atlas.png", &width, &height, &nChannels, 0);
 
+	if (data == NULL)
+		printf("texture atlas not read\n");
+
 	glGenTextures(1, &m_ID);
 
 	glActiveTexture(GL_TEXTURE0);

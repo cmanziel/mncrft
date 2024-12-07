@@ -121,6 +121,11 @@ void insertFaceTexCoords(float* coords, unsigned int blockID, int side)
 			else if (side == bottom)
 				blockID = dirt; // apply a dirt texture to the bottom face of a grass block
 		}
+		else if (blockID == grass_altitude)
+		{
+			if (side == top)
+				texIndexOffset = 1;
+		}
 
 		if (side == back || side == bottom || side == left)
 			fillVertsClockwise = true;

@@ -14,7 +14,7 @@
 
 #include "../Camera/Camera.h"
 
-#define CHUNK_RADIUS 7
+#define CHUNK_RADIUS 3
 
 enum state
 {
@@ -24,7 +24,7 @@ enum state
 class Player
 {
 public:
-	Player();
+	Player(unsigned int camWidth, unsigned int camHeight);
 	~Player();
 
 	uint8_t GetState();

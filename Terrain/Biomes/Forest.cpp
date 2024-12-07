@@ -24,9 +24,9 @@ short Forest::AssignBlockID(unsigned int y, unsigned int colHeight)
 	if (y >= colHeight)
 		ID = air;
 	else if (y == colHeight - 1)
-		ID = grass;
+		ID = grass_altitude;
 	else if (y < colHeight - 1 && y > colHeight / 3)
-		ID = dirt;
+		ID = dirt_altitude;
 	else
 		ID = cobblestone;
 

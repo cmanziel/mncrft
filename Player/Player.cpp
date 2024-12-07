@@ -2,13 +2,13 @@
 
 // avoid circular dependency between player and chunk classes by passing chunk parameters to player
 
-Player::Player()
+Player::Player(unsigned int camWidth, unsigned int camHeight)
 {
-	m_WorldPosition = vec3(0.0, 0.0, 0.0);
+	m_WorldPosition = vec3(0.0, 128.0f, 0.0);
 	m_BreakMaxDistance = 5.0;
 	m_State = STATE_WATCH;
 
-	Camera * cam = new Camera(m_WorldPosition);
+	Camera * cam = new Camera(m_WorldPosition, camWidth, camHeight);
 	m_Ray = Ray(m_WorldPosition, cam->GetCameraFront());
 
 	m_PlayerCam = cam;
